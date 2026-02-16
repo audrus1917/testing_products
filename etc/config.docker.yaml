@@ -1,0 +1,13 @@
+ALLOW_ORIGINS:
+  - "*"
+
+DB:
+  PG_HOST: db
+
+REDIS:
+  REDIST_HOST: redis
+  
+RABBIT:
+  RABBIT_HOST: rabbit
+
+

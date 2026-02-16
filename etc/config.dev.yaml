@@ -1,0 +1,8 @@
+ALLOW_ORIGINS:
+  - "*"
+
+DB:
+  PG_USER: andrus
+
+LOGGING_LEVEL: 10
+

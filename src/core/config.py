@@ -1,0 +1,140 @@
+"""Классы для настроек приложения."""
+
+import os
+
+from typing import List
+from pathlib import Path
+from zoneinfo import ZoneInfo
+
+import logging
+
+from pydantic import Field
+from pydantic_settings import (
+    BaseSettings,
+    SettingsConfigDict,
+    PydanticBaseSettingsSource,
+    YamlConfigSettingsSource,
+)
+
+from sqlalchemy.engine.url import URL
+
+
+# Режим работы (задается значением переменной окружения), в зависимости от которой
+# используется соответствующий файл ``etc/config.{APP_MODE}.yaml``
+APP_MODE = os.environ.get("MODE", "dev")
+
+
+class ApplicationSettings(BaseSettings):
+    """Класс настроек приложения."""
+
+    PROJECT_NAME: str = Field(
+        default="Управление каталогом товаров, товарами, заказами",
+        title="Наименование проекта"
+    )
+    PROJECT_DESCRIPTION: str = Field(
+        default="REST-API для управление товарами и заказами", title="Описание проекта"
+    )
+    VERSION: str = Field(default="0.1", title="Версия  API")
+    API_VERSION: int = Field(default=1, title="Префикс версии")
+    ACCESS_TOKEN_EXPIRE_SECONDS: int = 10 * 60
+    HOST: str = Field(default="localhost")
+    PORT: int = Field(default=8080)
+    CACHE_TTL: int = Field(default=5, title="TTL для кэша в минутах")
+
+    @property
+    def BASE_API_PREFIX(self):
+        """Возвращает базовый префикс для запроса."""
+        return f"/api/v{self.API_VERSION}"
+
+
+class PGSettings(BaseSettings):
+    """Настройки PostgreSQL."""
+
+    PG_DRIVER: str = "postgresql+asyncpg"
+    PG_HOST: str = Field(default="localhost")
+    PG_PORT: int = Field(default=5432)
+    PG_USER: str = Field(default="manager")
+    PG_PASSWORD: str = Field(default="")
+    DATABASE: str = Field(default="products_db")
+    ECHO: bool = Field(default=False)
+
+    @property
+    def uri(self) -> URL:
+        """Возвращает DSN соединения для SQLAlchemy."""
+
+        return URL.create(
+            self.PG_DRIVER,
+            self.PG_USER,
+            self.PG_PASSWORD,
+            self.PG_HOST,
+            self.PG_PORT,
+            self.DATABASE,
+        )
+
+
+class RedisSettings(BaseSettings):
+    """Настройки редиски"""
+    REDIS_HOST: str = Field(default="localhost", title="Хост для `Redis`")
+    REDIS_PORT: int = Field(default=6379, title="Порт для `Redis`")
+
+    @property
+    def uri(self) -> str:
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
+
+
+class RabbitSettings(BaseSettings):
+    """Настройки RabbitMQ."""
+
+    RABBIT_HOST: str = Field(default="localhost")
+    RABBIT_VHOST: str = Field(default="")
+    RABBIT_PORT: int = Field(default=5672)
+    RABBIT_USER: str = Field(default="user")
+    RABBIT_PASSWORD: str = Field(default="")
+
+    @property
+    def uri(self) -> str:
+        return (
+            f"amqp://{self.RABBIT_USER}:{self.RABBIT_PASSWORD}@{self.RABBIT_HOST}:{self.RABBIT_PORT}"
+            f"?{self.RABBIT_VHOST}"
+        )
+
+
+class Settings(BaseSettings):
+    """Настройки приложения."""
+
+    model_config = SettingsConfigDict(
+        secrets_dir=Path(__file__).parents[2] / "etc/secrets",
+        yaml_file=Path(__file__).parents[2] / f"etc/config.{APP_MODE}.yaml",
+    )
+
+    APPLICATION: ApplicationSettings = Field(default=ApplicationSettings())
+    SECRET_KEY: str = Field(default="61d4HpCGOq2JAYO5l_EeVJS7vA6IkGWIdVwj-ja3JfU")
+    ALGORITHM: str = Field(default="HS256")
+
+    DB: PGSettings = Field(default=PGSettings())
+    REDIS: RedisSettings = Field(default=RedisSettings())
+    RABBIT: RabbitSettings = Field(default=RabbitSettings())
+    DEBUG: bool = True
+    BASE_DIR: Path = Path().absolute()
+    TZ_NAME: str = "Europe/Moscow"
+    TZ_OFFSET: int = 3
+    ALLOW_ORIGINS: List[str] = ["http://localhost:8000/",]
+    LOGGING_LEVEL: int = logging.WARNING
+
+    @classmethod
+    def settings_customise_sources(
+        cls, settings_cls, *args, **kwargs
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        return (YamlConfigSettingsSource(settings_cls),)
+
+    @property
+    def TZ(self) -> ZoneInfo:
+        """Возвращает таймзону."""
+
+        return ZoneInfo(self.TZ_NAME)
+
+
+def get_settings() -> Settings:
+    """Возвращает настройки приложения."""
+
+    return Settings()
