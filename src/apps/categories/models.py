@@ -1,7 +1,6 @@
 """Класс модели ``Категории``."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING
 
 import uuid
 
@@ -10,16 +9,12 @@ from sqlalchemy.orm import (
     Mapped,
     mapped_column,
     relationship,
-    backref,
-    attribute_mapped_collection
 )
 from sqlalchemy.dialects.postgresql import UUID
 
 from src.database.alchemy import Base
 from src.database.alchemy.mixins import JSONRepresentationMixin, ChangedAtMixin
-
-if TYPE_CHECKING:
-    from src.apps.users.models import User
+from src.apps.users.models import User
 
 
 class Category(
@@ -29,7 +24,7 @@ class Category(
 ):
     """Класс модели для пользователей."""
 
-    __tablename__ = 'categories'
+    __tablename__ = "categories"
 
     id: Mapped[UUID] = mapped_column(
         UUID,
@@ -53,11 +48,10 @@ class Category(
         deferred=True,
         doc="Описание"
     )
-    created_by: Mapped["User"] = relationship(
-        "User",
-        back_populates='categories',
-        lazy='select',
-        doc="Кем создано"
+    created_by: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=True
     )
     children = relationship(
         "Category",
