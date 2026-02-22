@@ -1,39 +1,30 @@
-"""Утилиты приложения, используемые как зависимости."""
+"""``dependencies`` для приложения ``users``."""
 
-from typing import Any, Optional
-
-from fastapi import Depends, status
-from fastapi.exceptions import HTTPException
-from sqlalchemy import select
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.database.alchemy import get_session
+from src.database.alchemy.unit_of_work import AlchemyUnitOfWork
+
 from src.apps.users.models import User
-from src.oauth2.tokens import oauth2_scheme, verify_access_token
+from src.apps.users.repositories import UserRepository
+from src.apps.users.services import UserService
 
 
-async def get_user_by_id(
-    user_id: int,
-    session: AsyncSession = Depends(get_session)
+async def get_repository(
+    session: AsyncSession = Depends(get_session),
 ):
-    """Возвращает пользователя по ID."""
-    
-    result = await session.execute(select(User).where(User.id == user_id))
-    user = result.scalar_one_or_none()
-
-    if not user:
-        response_data = {
-            "status_code": status.HTTP_404_NOT_FOUND,
-            "detail": "Объект не найден"
-        }
-        raise HTTPException(**response_data)
-    return user
+    yield UserRepository(session=session, model=User)
 
 
-async def get_current_user(
-    token: Any = Depends(oauth2_scheme),
-    session: AsyncSession = Depends(get_session)
-) -> Optional[User]:
-    """Возвращает текущего пользователя по токену."""
+async def _get_uow(session: AsyncSession = Depends(get_session)):
+    yield AlchemyUnitOfWork(session=session)
 
-    return await get_user_by_id(18, session=session) # token.id)
+
+async def get_service(
+    uow=Depends(_get_uow),
+):
+    yield UserService(uow=uow)
+
+
+__all__ = ['get_service']

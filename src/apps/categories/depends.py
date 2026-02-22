@@ -3,19 +3,18 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.apps.persons.models import PersonModel
 from src.database.alchemy import get_session
 from src.database.alchemy.unit_of_work import AlchemyUnitOfWork
 
-from .repositories import PersonRepository
-from .services import PersonService
-from .controllers import PersonController
+from src.apps.categories.models import Category
+from src.apps.categories.repositories import CategoryRepository
+from src.apps.categories.services import CategoryService
 
 
 async def get_repository(
     session: AsyncSession = Depends(get_session),
 ):
-    yield PersonRepository(session=session, model=PersonModel)
+    yield CategoryRepository(session=session, model=Category)
 
 
 async def _get_uow(session: AsyncSession = Depends(get_session)):
@@ -25,13 +24,7 @@ async def _get_uow(session: AsyncSession = Depends(get_session)):
 async def get_service(
     uow=Depends(_get_uow),
 ):
-    yield PersonService(uow=uow)
+    yield CategoryService(uow=uow)
 
 
-async def get_controller(
-    person_service=Depends(get_service),
-):
-    yield PersonController(person_service=person_service)
-
-
-__all__ = ['get_controller', 'get_service']
+__all__ = ['get_service']

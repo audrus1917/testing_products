@@ -2,37 +2,34 @@
 
 from __future__ import annotations
 
-import uuid
-
 from sqlalchemy import String, Text, Integer, ForeignKey
 from sqlalchemy.orm import (
     Mapped,
     mapped_column,
     relationship,
 )
-from sqlalchemy.dialects.postgresql import UUID
 
 from src.database.alchemy import Base
-from src.database.alchemy.mixins import JSONRepresentationMixin, ChangedAtMixin
+from src.database.alchemy.mixins import JSONMixin, ChangedAtMixin
+
 from src.apps.users.models import User
 
 
 class Category(
     ChangedAtMixin,
-    JSONRepresentationMixin,
+    JSONMixin,
     Base
 ):
     """Класс модели для пользователей."""
 
     __tablename__ = "categories"
 
-    id: Mapped[UUID] = mapped_column(
-        UUID,
-        primary_key=True,
-        default=uuid.uuid4
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True
     )
     parent_id = mapped_column(
-        UUID,
+        Integer,
         ForeignKey("categories.id"),
         nullable=True
     )
@@ -64,6 +61,11 @@ class Category(
         back_populates="children",
         remote_side=[id]
     )
+    author = relationship(
+        "User",
+        lazy="select",
+        uselist=False
+    )
 
     def __repr__(self) -> str:
-        return f"Category(id={self.id}, name={self.name})"
+        return f"Category(id={self.id}, name={self.name}, parent={self.parent_id})"

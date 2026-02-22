@@ -6,11 +6,10 @@ from typing import Optional
 
 
 @dataclass
-class CategoryEntity:
+class UserEntity:
 
-    name: str
-    id: Optional[int] = None
-    parent_id: Optional[int] = None
-    description: Optional[str] = None
-    created_by: Optional[int] = None
+    email: str
+    hashed_password: str
+    is_active: bool = True
+    is_superuser: bool = False
     created_at: Optional[datetime] = None

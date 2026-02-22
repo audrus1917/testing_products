@@ -1,4 +1,4 @@
-"""The base SQLAlchemy Repository class."""
+"""Базовый класс репозитория для ``SQLAlchemy``."""
 
 from typing import Type, Optional, TypeVar, Collection, Dict, Any
 
@@ -16,10 +16,6 @@ AlchemyModelT = TypeVar('AlchemyModelT', bound=Base)
 
 
 class AlchemyRepository[AlchemyModelT]:
-    """
-    Базовый класс для репозиториев, работающих с БД посредством `SQLAlchemy`.
-    """
-
     session: AsyncSession
     model: Type[AlchemyModelT]
 
@@ -32,6 +28,7 @@ class AlchemyRepository[AlchemyModelT]:
     ):
         self.session = session
         self.model = model
+        # Базовый запрос
         self.__initial_query: Optional[Select] = (
             initial_query if initial_query is not None else select(model)
         )
@@ -44,15 +41,15 @@ class AlchemyRepository[AlchemyModelT]:
         self.refresh = self.error_wrapper.decorate(self.refresh)
 
     def get_initial_query(self, override_query: Optional[Select] = None) -> Select:
-        """Return the query (initial or overriding)."""
-
         if override_query is not None:
             return override_query
+        
         if self.__initial_query is not None:
             return self.__initial_query
         else:
             raise AssertionError(
-                'You must either pass the initial query or define get_initial_query()'
+                "You must either pass the initial "
+                "query or define ``get_initial_query()``"
             )
 
     def to_model(self, data: Dict[Any, Any]) -> AlchemyModelT:
@@ -62,8 +59,6 @@ class AlchemyRepository[AlchemyModelT]:
         self,
         query: Optional[Select] = None,
     ) -> Optional[AlchemyModelT]:
-        """Return the selected model."""
-
         overriden_query: Select = self.get_initial_query(query)
         if overriden_query.whereclause is None:
             raise InvalidQueryError
@@ -75,8 +70,6 @@ class AlchemyRepository[AlchemyModelT]:
         self,
         query: Optional[Select] = None,
     ) -> Collection[AlchemyModelT]:
-        """Return the selected models collection."""
-
         overriden_query = self.get_initial_query(query)
         result = await self.session.execute(overriden_query)
         return result.scalars().all()
@@ -86,13 +79,12 @@ class AlchemyRepository[AlchemyModelT]:
         obj: Optional[AlchemyModelT] = None,
         obj_data: Optional[Dict[Any, Any]] = None,
     ) -> Optional[AlchemyModelT]:
-        """Save and return the model."""
 
         if obj is None and obj_data is not None:
             obj = self.to_model(obj_data)
 
         self.session.add(obj)
-        await self.session.commit()
+        await self.session.flush()
         return obj
 
     async def update(
@@ -101,7 +93,6 @@ class AlchemyRepository[AlchemyModelT]:
         query: Optional[Select] = None,
         update_values: Optional[Dict[Any, Any]] = None,
     ) -> None:
-        """Update the model object."""
         if isinstance(query, Select) and update_values:
             stmt = update(self.model)
             if query.whereclause is not None:

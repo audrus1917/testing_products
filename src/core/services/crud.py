@@ -1,6 +1,6 @@
-"""Класс сервиса для `CRUD`."""
+"""Класс сервиса для ``CRUD``."""
 
-from typing import Type, TypeVar, Union, Optional, Dict, Any, Collection
+from typing import TypeVar, Union, Optional, Dict, Any, Collection
 
 from src.core.database.repositories import AsyncRepository
 from src.core.database.unit_of_work import AsyncUnitOfWork

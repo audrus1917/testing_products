@@ -1,20 +1,13 @@
-"""Класс модели :cls:`User`."""
-
 from __future__ import annotations
 
 from sqlalchemy import String, Integer, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.database.alchemy import Base
-from src.database.alchemy.mixins import JSONRepresentationMixin, ChangedAtMixin
+from src.database.alchemy.mixins import JSONMixin, ChangedAtMixin
 
 
-class User(
-    ChangedAtMixin, 
-    JSONRepresentationMixin, 
-    Base
-):
-    """Класс модели для пользователей."""
+class User(ChangedAtMixin, JSONMixin, Base):
 
     __tablename__ = 'users'
 
@@ -42,4 +35,3 @@ class User(
 
     def __repr__(self) -> str:
         return f'User(email={self.email})'
-

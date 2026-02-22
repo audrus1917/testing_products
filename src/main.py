@@ -6,15 +6,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import redis.asyncio
-import aio_pika
 
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 
 from src.core.config import get_settings
 from src.database.alchemy import engine
-# from src.apps.auth.routes import auth_router
-# from src.apps.users.routes import users_router
+from src.apps.auth.routes import auth_router
+from src.apps.users.routes import users_router
 # from src.apps.orders.routes import orders_router
 
 from . import tags_metadata
@@ -64,6 +63,6 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
-# app.include_router(auth_router, tags=["auth"])
-# app.include_router(users_router, tags=["users"])
+app.include_router(auth_router, tags=["auth"])
+app.include_router(users_router, tags=["users"])
 # app.include_router(orders_router, tags=["orders"], prefix="/orders")

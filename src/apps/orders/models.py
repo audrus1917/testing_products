@@ -12,7 +12,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 
 from src.database.alchemy import Base
-from src.database.alchemy.mixins import JSONRepresentationMixin, ChangedAtMixin
+from src.database.alchemy.mixins import JSONMixin, ChangedAtMixin
 
 from .enums import OrderStatus
 
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 class Order(
     ChangedAtMixin,
-    JSONRepresentationMixin,
+    JSONMixin,
     Base
 ):
     """Класс модели для пользователей."""

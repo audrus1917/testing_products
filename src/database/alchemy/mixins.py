@@ -19,7 +19,7 @@ class ChangedAtMixin:
     )
 
 
-class JSONRepresentationMixin:
+class JSONMixin:
     def to_json(self) -> dict:
         return {
             column: value
