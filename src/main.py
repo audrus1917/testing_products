@@ -14,7 +14,7 @@ from src.core.config import get_settings
 from src.database.alchemy import engine
 from src.apps.auth.routes import auth_router
 from src.apps.users.routes import users_router
-# from src.apps.orders.routes import orders_router
+from src.apps.categories.routes import categories_router
 
 from . import tags_metadata
 
@@ -63,6 +63,9 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
-app.include_router(auth_router, tags=["auth"])
-app.include_router(users_router, tags=["users"])
-# app.include_router(orders_router, tags=["orders"], prefix="/orders")
+app.include_router(auth_router, tags=["auth"], prefix="/auth")
+app.include_router(users_router, tags=["users"], prefix="/users")
+app.include_router(categories_router, tags=["categories"], prefix="/categories")
+
+for x in app.routes:
+    print(x)

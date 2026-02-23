@@ -23,8 +23,9 @@ async def _get_uow(session: AsyncSession = Depends(get_session)):
 
 async def get_service(
     uow=Depends(_get_uow),
+    repository=Depends(get_repository)
 ):
-    yield CategoryService(uow=uow)
+    yield CategoryService(uow=uow, repository=repository)
 
 
 __all__ = ['get_service']

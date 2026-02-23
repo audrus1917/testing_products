@@ -1,8 +1,7 @@
-"""Репозиторий приложения ``Категории``."""
+"""Репозиторий приложения ``Пользователи``."""
 
 from src.database.alchemy.repositories import AlchemyRepository
-
-from .models import Category
+from src.apps.categories.models import Category
 
 
 class CategoryRepository(AlchemyRepository):

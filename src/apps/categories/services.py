@@ -1,9 +1,7 @@
-"""The service for ``Person`` entity."""
-
 from src.core.services.crud import AsyncCRUDService
 
-from .models import PersonModel
+from src.apps.categories.models import Category
 
 
-class PersonService[PersonModel](AsyncCRUDService):
+class CategoryService[Category](AsyncCRUDService):
     pass

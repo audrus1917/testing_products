@@ -1,11 +1,12 @@
 """Создание и верификация токена."""
 
-from typing import Any
+from typing import Any, Annotated
 from datetime import datetime, timedelta
 
 import jwt
 
-from fastapi import status, HTTPException
+from pydantic import BaseModel
+from fastapi import status, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
 
 
@@ -47,3 +48,21 @@ def verify_access_token(token: str):
         ) from exc
 
     return token_data
+
+
+class User(BaseModel):
+    username: str
+    email: str | None = None
+    full_name: str | None = None
+    disabled: bool | None = None
+
+
+def fake_decode_token(token):
+    return User(
+        username=token + "fakedecoded", email="john@example.com", full_name="John Doe"
+    )
+
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    user = fake_decode_token(token)
+    return user

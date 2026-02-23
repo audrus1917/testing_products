@@ -1,13 +1,10 @@
-from fastapi.exceptions import HTTPException
-
-
-class UniqueConstraintError(HTTPException):
+class UniqueConstraintError(Exception):
     """Ограничение на уникальность объектов"""
 
 
-class NotFoundError(HTTPException):
+class NotFoundError(Exception):
     """Страница/объект не найден(а)"""
 
 
-class IsOwnerError(HTTPException):
+class IsOwnerError(Exception):
     """Нет доступа к объекту."""

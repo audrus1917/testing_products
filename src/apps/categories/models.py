@@ -1,4 +1,4 @@
-"""Класс модели ``Категории``."""
+"""Классы моделей приложения ``categories``."""
 
 from __future__ import annotations
 
@@ -20,8 +20,6 @@ class Category(
     JSONMixin,
     Base
 ):
-    """Класс модели для пользователей."""
-
     __tablename__ = "categories"
 
     id: Mapped[int] = mapped_column(
