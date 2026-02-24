@@ -1,4 +1,4 @@
-"""Классы моделей приложения ``categories``."""
+"""Классы моделей приложения ``manufacturers``."""
 
 from __future__ import annotations
 from typing import TYPE_CHECKING
@@ -17,21 +17,16 @@ if TYPE_CHECKING:
     from src.apps.users.models import User
 
 
-class Category(
+class Manufacturer(
     ChangedAtMixin,
     JSONMixin,
     Base
 ):
-    __tablename__ = "categories"
+    __tablename__ = "manufacturers"
 
     id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True
-    )
-    parent_id = mapped_column(
-        Integer,
-        ForeignKey("categories.id"),
-        nullable=True
     )
     name: Mapped[str] = mapped_column(
         String(255),
@@ -49,17 +44,6 @@ class Category(
         ForeignKey("users.id"),
         nullable=True
     )
-    children = relationship(
-        "Category",
-        back_populates="parent",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
-    )
-    parent = relationship(
-        "Category",
-        back_populates="children",
-        remote_side=[id]
-    )
     author = relationship(
         "User",
         lazy="select",
@@ -67,4 +51,4 @@ class Category(
     )
 
     def __repr__(self) -> str:
-        return f"Category(id={self.id}, name={self.name}, parent={self.parent_id})"
+        return f"Manufacturer(id={self.id}, name={self.name})"

@@ -7,7 +7,7 @@ from sqlalchemy.sql.selectable import Select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.error_wrapper import ErrorWrapper
-from src.core.database.exceptions import InvalidQueryError
+from src.core.database.exceptions import InvalidQueryError, NotFoundError
 from src.database.alchemy import Base
 from src.database.alchemy.error_wrapper import AlchemyErrorWrapper
 from src.database.alchemy.model_utils import dict_to_alchemy_models
@@ -65,6 +65,21 @@ class AlchemyRepository[AlchemyModelT]:
         res = await self.session.execute(overriden_query)
         result = res.one_or_none()
         return result[0] if result is not None else None
+
+    async def get_by_id(
+        self,
+        id_value: Any
+    ) -> AlchemyModelT:
+        overriden_query: Select = self.get_initial_query().where(self.model.id == id_value)
+        if overriden_query.whereclause is None:
+            raise InvalidQueryError
+        res = await self.session.execute(overriden_query)
+        result = res.one_or_none()
+        if result is None:
+            raise NotFoundError(f"Model {self.model.__name__} with id {id_value} not found")    
+        
+        return result[0]
+
 
     async def filter(
         self,

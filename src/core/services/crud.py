@@ -26,11 +26,17 @@ class AsyncCRUDService[ModelT](AsyncService):
     ) -> ModelT:
         return await self.repository.get(query=query)
 
+    async def get_by_id(self, id_value: Any) -> ModelT:
+        """Возвращает модель по заданному id."""
+
+        return await self.repository.get_by_id(id_value)
+
     async def filter(
         self,
         query: Optional[QueryT] = None,
     ) -> Collection[ModelT]:
         """Возвращает коллекцию моделей, выбранных по запросу."""
+
         return await self.repository.filter(query=query)
 
     async def create(self, obj_data: Union[dict, ModelT]) -> ModelT:

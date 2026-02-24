@@ -66,6 +66,3 @@ app.add_middleware(
 app.include_router(auth_router, tags=["auth"], prefix="/auth")
 app.include_router(users_router, tags=["users"], prefix="/users")
 app.include_router(categories_router, tags=["categories"], prefix="/categories")
-
-for x in app.routes:
-    print(x)

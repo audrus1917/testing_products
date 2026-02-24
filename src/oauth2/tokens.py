@@ -51,18 +51,21 @@ def verify_access_token(token: str):
 
 
 class User(BaseModel):
-    username: str
+    user_id: int
     email: str | None = None
-    full_name: str | None = None
-    disabled: bool | None = None
 
 
-def fake_decode_token(token):
-    return User(
-        username=token + "fakedecoded", email="john@example.com", full_name="John Doe"
-    )
-
-
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    user = fake_decode_token(token)
-    return user
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)]
+) -> int:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload and (user_id := payload.get("user_id")):
+            return user_id 
+        raise jwt.DecodeError
+    except jwt.DecodeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Неверные данные для аутентификации",
+            headers={"WWW-Authenticate": "Bearer"}
+        ) from exc

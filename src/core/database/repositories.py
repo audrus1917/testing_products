@@ -66,6 +66,16 @@ class Repository(Generic[SessionT, ModelT, QueryT], ABC):
         raise NotImplementedError("get() is not implemented()")
 
     @abstractmethod
+    async def get_by_id(
+        self,
+        id_value: Any
+    ) -> ModelT:
+        """Return the object by id."""
+
+        raise NotImplementedError("get_by_id() is not implemented()")
+
+
+    @abstractmethod
     def filter(
         self,
         query: Optional[QueryT] = None,

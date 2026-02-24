@@ -39,17 +39,14 @@ categories_router = APIRouter(
     description="Добавление новой категории"
 )
 async def create_category(
-    request: Request,
     category_data: CategoryCreateSchema,
-    session: AsyncSession = Depends(get_session),
     service: CategoryService = Depends(get_service),
-    user = Depends(get_current_user)
+    user_id: int = Depends(get_current_user)
 ) -> CategoryReadSchema:
     """Добавляет новую категорию."""
-
-    print(user)
-
-    model = service.create(obj_data=schema_model_dump(category_data))
+    if user_id:
+        category_data.created_by = user_id
+    model = await service.create(obj_data=schema_model_dump(category_data))
     return CategoryReadSchema.model_validate(model)
 
 

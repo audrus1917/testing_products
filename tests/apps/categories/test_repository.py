@@ -1,6 +1,6 @@
 """Тесты для репозитория приложения ``Категории``."""
 
-import math
+from typing import Optional
 
 import pytest
 
@@ -52,10 +52,14 @@ async def test_build_tree(session: AsyncSession):
         name="Родительская категория",
         description="Описание родительскрй категории"
     )
-    parent_model = await repository.save(obj_data=asdict(parent_entity))
+    parent_model: Optional[Category] = await repository.save(
+        obj_data=asdict(parent_entity)
+    )
+    if parent_model is None:
+        raise AssertionError("Ошибка при сохранении родительской категории")
 
     children: dict[int, list[int]] = {}
-    parents: list[int] = [parent_model.id] 
+    parents: list[int] = [parent_model.id]
     for idx in range(1, 30):
         # Проверяем, что все "родители" уже заполнены
         current_parent = None
@@ -70,7 +74,7 @@ async def test_build_tree(session: AsyncSession):
                 _parents += children[x]
             parents = _parents
             current_parent = parents[0]
-    
+
         children.setdefault(current_parent, [])
 
         new_entity = CategoryEntity(
@@ -81,14 +85,13 @@ async def test_build_tree(session: AsyncSession):
         new_model = await repository.save(obj_data=asdict(new_entity))
         children[current_parent].append(new_model.id)
 
-    initial_query = select(Category).where(
-        Category.id == parent_model.id
-    ).cte(name="node_cte", recursive=True)
+    # Дерево
+    categories_tree = await repository.get_tree(parent_id=parent_model.id)
+    assert categories_tree is not None
 
-    node_alias = aliased(Category, name="child")
-    recursive_query = select(initial_query.union_all(
-        select(node_alias).join(initial_query, node_alias.parent_id == initial_query.c.id)
-    ))
-    result = await session.execute(recursive_query)
-    for row in result.all():
-        print(row.id, row.parent_id, row.name)
+    category_ancestors = await repository.get_ancestors(node_id=19)
+    assert category_ancestors is not None
+    ancestor_ids = [x[0].id for x in category_ancestors]
+    assert 1 in ancestor_ids
+    assert 2 in ancestor_ids
+    assert 6 in ancestor_ids

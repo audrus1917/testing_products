@@ -32,7 +32,10 @@ async def token(
 ):
     """Получение токена."""
 
-    stmt = select(User).where(User.email == user_credentials.username)
+    stmt = select(User).where(
+        User.email == user_credentials.username,
+        User.is_active
+    )
     result = await session.execute(stmt)
     user = result.scalar_one_or_none()
 
