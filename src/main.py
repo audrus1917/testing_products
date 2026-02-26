@@ -18,6 +18,7 @@ from src.apps.manufacturers.routes import manufacturers_router
 from src.apps.categories.routes import categories_router
 from src.apps.products.routes import products_router
 from src.apps.clients.routes import clients_router
+from src.apps.orders.routes import orders_router
 
 from . import tags_metadata
 
@@ -72,4 +73,5 @@ app.include_router(categories_router, tags=["categories"], prefix="/categories")
 app.include_router(manufacturers_router, tags=["manufacturers"], prefix="/manufacturers")
 app.include_router(products_router, tags=["products"], prefix="/products")
 app.include_router(clients_router, tags=["clients"], prefix="/clients")
+app.include_router(orders_router, tags=["orders"], prefix="/orders")
 

@@ -33,7 +33,6 @@ async def get_session():
             yield session
         finally:
             await session.close()
-        yield session
 
 
 def get_session_sync():
@@ -48,5 +47,4 @@ def get_session_sync():
             yield session
         finally:
             session.close()
-        yield session
 

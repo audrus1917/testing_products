@@ -12,6 +12,7 @@ from src.core.utils import schema_model_dump
 from src.oauth2.tokens import get_current_user, UserData 
 from src.core.http_response_schemas import Unauthorized
 
+from src.apps.api_error_wrapper import api_error_wrapper
 from src.apps.products.models import Product
 from src.apps.products.schemas import (
     ProductCreateSchema,
@@ -41,6 +42,7 @@ class ProductFilter(Filter):
     response_model=ProductListSchema,
     description="Получение списка производителей"
 )
+@api_error_wrapper.decorate
 async def get_product_list(
     service: ProductService = Depends(get_service),
     filters: ProductFilter = FilterDepends(ProductFilter)
@@ -56,6 +58,7 @@ async def get_product_list(
     response_model=ProductReadSchema,
     description="Получение детализированных данных о производителе"
 )
+@api_error_wrapper.decorate
 async def get_product(
     product_id: int,
     service: ProductService = Depends(get_service),
@@ -72,6 +75,7 @@ async def get_product(
     status_code=status.HTTP_201_CREATED,
     description="Добавление нового производителя"
 )
+@api_error_wrapper.decorate
 async def create_product(
     product_data: ProductCreateSchema,
     service: ProductService = Depends(get_service),
@@ -95,6 +99,7 @@ async def create_product(
     response_model=ProductReadSchema,
     description="Обновление данных о производителе"
 )
+@api_error_wrapper.decorate
 async def update_product(
     product_id: int,
     product_data: ProductUpdateSchema,
@@ -124,6 +129,7 @@ async def update_product(
     },
     status_code=status.HTTP_204_NO_CONTENT,
 )
+@api_error_wrapper.decorate
 async def delete_product(
     product_id: int,
     service: ProductService = Depends(get_service),
