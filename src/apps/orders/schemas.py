@@ -28,7 +28,8 @@ class OrderReadSchema(BaseModel):
         None, 
         title="Дата доставки заказа"
     )
-    delivery_method: DeliveryMethod = Field(..., title="Способ доставки")
+    delivery: Optional[DeliveryMethod] = Field(None, title="Способ доставки")
+    status: Optional[OrderStatus] = Field(..., title="Статус заказа")
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -51,7 +52,7 @@ class OrderItemCreateSchema(BaseModel):
     order_id: int = Field(..., title="ID заказа")
     product_id: int = Field(..., title="ID продукта")
     amount: Decimal = Field(..., description="Количество")
-    price: Decimal = Field(..., description="Цена")
+    price: Optional[Decimal] = Field(None, description="Цена")
 
 
 class OrderItemReadSchema(BaseModel):
