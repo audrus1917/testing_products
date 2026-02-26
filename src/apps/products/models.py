@@ -59,6 +59,11 @@ class Product(
         ForeignKey("manufacturers.id"),
         nullable=True
     )
+    category_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("categories.id"),
+        nullable=False
+    )
     author = relationship(
         "User",
         lazy="select",
@@ -66,6 +71,11 @@ class Product(
     )
     manufacturer = relationship(
         "Manufacturer",
+        lazy="select",
+        uselist=False
+    )
+    category = relationship(
+        "Category",
         lazy="select",
         uselist=False
     )

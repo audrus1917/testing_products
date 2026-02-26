@@ -1,0 +1,18 @@
+{
+    "items": [
+        {"name": "Haier", "type": "Бытовая техника", "country": "Китай/РФ"},
+        {"name": "LG Electronics", "type": "Бытовая техника", "country": "Корея/РФ"},
+        {"name": "BEKO", "type": "Бытовая техника", "country": "Турция/РФ"},
+        {"name": "Ariston", "type": "Бытовая техника", "country": "Италия/РФ"},
+        {"name": "Atlant", "type": "Холодильники/Стиральные машины", "country": "Беларусь"},
+        {"name": "Gefest", "type": "Плиты/Встраиваемая техника", "country": "Беларусь"},
+        {"name": "Kitfort", "type": "Мелкая/Крупная техника", "country": "Россия"},
+        {"name": "Redmond", "type": "Мелкая техника", "country": "Россия"},
+        {"name": "Бирюса", "type": "Холодильники", "country": "Россия"},
+        {"name": "Scarlett", "type": "Мелкая техника", "country": "Россия/Китай"},
+        {"name": "Horizont", "type": "Телевизоры/Техника", "country": "Беларусь"},
+        {"name": "Candy", "type": "Бытовая техника", "country": "Италия/Китай"},
+        {"name": "Midea", "type": "Бытовая техника", "country": "Китай"},
+        {"name": "Gorenje", "type": "Бытовая техника", "country": "Словения/Китай"}
+    ]
+}

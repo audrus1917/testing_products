@@ -89,11 +89,6 @@ class Order(
         )
 
 
-#     product = models.ForeignKey(Product, verbose_name=_("продукт в заказе"), on_delete=models.CASCADE)
-#     order = models.ForeignKey(Order, verbose_name=_("заказ"), on_delete=models.CASCADE)
-#     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("цена"))
-#     amount = models.PositiveIntegerField(verbose_name=_("количество"), default=1)
-
 class OrderItem(
     ChangedAtMixin,
     JSONMixin,
