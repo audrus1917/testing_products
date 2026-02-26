@@ -1,6 +1,8 @@
 from typing import Final
 
 from sqlalchemy import MetaData
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.ext.asyncio import async_sessionmaker
@@ -27,4 +29,15 @@ async def get_session():
         engine, class_=AsyncSession, expire_on_commit=False
     )
     async with async_session() as session:
+        yield session
+
+
+def get_session_sync():
+
+    sync_engine = create_engine(
+        SETTINGS.DB.uri.set(drivername="postgresql"),
+        future=True,
+    )
+    Session = sessionmaker(sync_engine)
+    with Session() as session:
         yield session

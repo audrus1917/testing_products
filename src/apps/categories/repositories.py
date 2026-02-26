@@ -63,7 +63,6 @@ class CategoryRepository(AlchemyRepository):
         model: Category,
         update_values: Dict[Any, Any],
     ) -> Category:
-        print("Update values: ", update_values)
         if updated_parent_id := update_values.get("parent_id"):
             ancestors_ids = [
                 ancestor[0].id for ancestor in 
