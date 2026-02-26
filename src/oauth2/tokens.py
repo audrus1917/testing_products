@@ -50,18 +50,25 @@ def verify_access_token(token: str):
     return token_data
 
 
-class User(BaseModel):
+class UserData(BaseModel):
     user_id: int
     email: str | None = None
+    is_active: bool | None= True
+    is_superuser: bool | None = False
 
 
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)]
-) -> int:
+) -> UserData:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         if payload and (user_id := payload.get("user_id")):
-            return user_id 
+            return UserData(
+                user_id=user_id,
+                email=payload.get("email"),
+                is_active=payload.get("is_active"),
+                is_superuser=payload.get("is_superuser")
+            )
         raise jwt.DecodeError
     except jwt.DecodeError as exc:
         raise HTTPException(

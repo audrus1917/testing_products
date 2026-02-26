@@ -1,24 +1,27 @@
-"""Класс модели `Заказы`."""
+"""Классы моделей приложения ``orders``."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, Any
-
-import uuid
+from typing import TYPE_CHECKING
 
 from decimal import Decimal
 
-from sqlalchemy import Numeric, Enum, Index, Integer, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import String, Text, Integer, Numeric, Date, Enum, ForeignKey
+
+from sqlalchemy.orm import (
+    Mapped,
+    mapped_column,
+    relationship,
+)
 
 from src.database.alchemy import Base
 from src.database.alchemy.mixins import JSONMixin, ChangedAtMixin
 
-from .enums import OrderStatus
-
+from src.apps.orders.enums import OrderStatus, DeliveryMethod
 
 if TYPE_CHECKING:
     from src.apps.users.models import User
+    from src.apps.clients.models import Client
+    from src.apps.products.models import Product
 
 
 class Order(
@@ -26,46 +29,120 @@ class Order(
     JSONMixin,
     Base
 ):
-    """Класс модели для пользователей."""
+    __tablename__ = "orders"
 
-    __tablename__ = 'orders'
-
-    id: Mapped[UUID] = mapped_column(
-        UUID, 
-        primary_key=True, 
-        default=uuid.uuid4
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True
     )
-    user: Mapped["User"] = relationship(
-        "User",
-        back_populates='person',
-        lazy='select',
-        uselist=False,
-    )
-    total_price: Mapped[Decimal] = mapped_column(
-        Numeric(15, 2),
+    order_no: Mapped[str] = mapped_column(
+        String(50),
         nullable=False,
-        default=0.
+        index=True,
+        doc="Номер заказа"
+    )
+    client_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("clients.id"),
+        nullable=True
+    )
+    registration_date: Mapped[Date] = mapped_column(
+        Date,
+        nullable=True,
+        doc="Дата регистрации заказа"
+    )
+    payment_date: Mapped[Date] = mapped_column(
+        Date,
+        nullable=True,
+        doc="Дата оплаты заказа"
+    )
+    delivery_date: Mapped[Date] = mapped_column(
+        Date,
+        nullable=True,
+        doc="Дата доставки заказа"
     )
     status: Mapped[OrderStatus] = mapped_column(
-        Enum(OrderStatus), 
-        nullable=False, 
-        default=OrderStatus.PENDING,
-        index=True
+        Enum(OrderStatus),
+        nullable=False,
+        default=OrderStatus.NOT_PAID,
+        index=True,
+        doc="Статус заказа"
     )
-    items: Mapped[Dict[str, Any]] = mapped_column(JSONB)
-    user_id: Mapped[int] = mapped_column(
-        Integer,
-        ForeignKey("users.id")
+    delivery: Mapped[DeliveryMethod] = mapped_column(
+        Enum(DeliveryMethod),
+        nullable=False,
+        default=DeliveryMethod.DELIVERY,
+        index=True,
+        doc="Способ доставки"
     )
-    user: Mapped["User"] = relationship("User", lazy="select")
-    __table_args__ = (
-        Index(
-            'idx_items_product_id_gin',
-            items['products'],
-            postgresql_using='gin',
-            postgresql_ops={'products': 'jsonb_ops'} 
-        ),
+
+    client = relationship(
+        "Client",
+        lazy="select",
+        uselist=False
     )
 
     def __repr__(self) -> str:
-        return f"Order(id={self.id})"
+        return (
+            f"Order(id={self.id}, client={self.client.full_name}, "
+            f"status={self.status})"
+        )
+
+
+#     product = models.ForeignKey(Product, verbose_name=_("продукт в заказе"), on_delete=models.CASCADE)
+#     order = models.ForeignKey(Order, verbose_name=_("заказ"), on_delete=models.CASCADE)
+#     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("цена"))
+#     amount = models.PositiveIntegerField(verbose_name=_("количество"), default=1)
+
+class OrderItem(
+    ChangedAtMixin,
+    JSONMixin,
+    Base
+):
+    __tablename__ = "order_items"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True
+    )
+#     order_status = models.ForeignKey("OrderStatus", verbose_name=_("статус заказа"), on_delete=models.CASCADE)
+#     delivery = models.ForeignKey("Delivery", verbose_name=_("доставка"), on_delete=models.CASCADE)
+
+    product_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("products.id"),
+        nullable=False
+    )
+    order_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("orders.id"),
+        nullable=False
+    )
+    product = relationship(
+        "Client",
+        lazy="select",
+        uselist=False
+    )
+    order = relationship(
+        "Order",
+        lazy="select",
+        uselist=False
+    )
+    price: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2),
+        nullable=False,
+        default=0.,
+        doc="Цена"
+    )
+    amount: Mapped[Decimal] = mapped_column(
+        Numeric(12, 2),
+        nullable=False,
+        default=0,
+        doc="Количество"
+    )
+
+    def __repr__(self) -> str:
+        return (
+            f"OrderItem(id={self.id}, product={self.product.name}, "
+            f"order={self.order.id})"
+        )

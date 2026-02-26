@@ -1,11 +1,12 @@
 """Репозиторий приложения ``Пользователи``."""
 
-from typing import Sequence, Any
+from typing import Sequence, Any, Optional, Dict
 
-from sqlalchemy import select
+from sqlalchemy import select, Select
 from sqlalchemy.orm import aliased
 from sqlalchemy.engine import Row
 
+from src.core.database.exceptions import InvalidQueryError
 from src.database.alchemy.repositories import AlchemyRepository
 from src.apps.categories.models import Category
 
@@ -56,3 +57,21 @@ class CategoryRepository(AlchemyRepository):
             )
         )
         return result.all()
+
+    async def update(
+        self,
+        model: Category,
+        update_values: Dict[Any, Any],
+    ) -> Category:
+        print("Update values: ", update_values)
+        if updated_parent_id := update_values.get("parent_id"):
+            ancestors_ids = [
+                ancestor[0].id for ancestor in 
+                await self.get_ancestors(node_id=updated_parent_id)
+            ]
+            if model.id in ancestors_ids:
+                raise InvalidQueryError(
+                    "Невозможно установить родителем категорию, которая "
+                    "является потомком"
+                )
+        return await super().update(model=model, update_values=update_values)

@@ -66,7 +66,7 @@ class Repository(Generic[SessionT, ModelT, QueryT], ABC):
         raise NotImplementedError("get() is not implemented()")
 
     @abstractmethod
-    async def get_by_id(
+    def get_by_id(
         self,
         id_value: Any
     ) -> ModelT:
@@ -74,11 +74,11 @@ class Repository(Generic[SessionT, ModelT, QueryT], ABC):
 
         raise NotImplementedError("get_by_id() is not implemented()")
 
-
     @abstractmethod
     def filter(
         self,
         query: Optional[QueryT] = None,
+        **kwargs
     ) -> Collection[ModelT]:
         """Return the objects collection."""
         raise NotImplementedError("filter() is not implemented()")
@@ -153,9 +153,19 @@ class AsyncRepository(Generic[SessionT, ModelT, QueryT], ABC):
         raise NotImplementedError("get() is not implemented()")
 
     @abstractmethod
+    async def get_by_id(
+        self,
+        id_value: Any
+    ) -> ModelT:
+        """Return the object by id."""
+
+        raise NotImplementedError("get_by_id() is not implemented()")
+
+    @abstractmethod
     async def filter(
         self,
         query: Optional[QueryT] = None,
+        **filters,
     ) -> Collection[ModelT]:
         """Return the objects collection."""
         raise NotImplementedError("filter() is not implemented()")
@@ -170,17 +180,31 @@ class AsyncRepository(Generic[SessionT, ModelT, QueryT], ABC):
     @abstractmethod
     async def update(
         self,
-        obj: Optional[ModelT] = None,
-        query: Optional[QueryT] = None,
-        update_values: Optional[Dict[Any, Any]] = None,
+        model: ModelT,
+        update_values: Dict[Any, Any],
+    ) -> ModelT:
+        raise NotImplementedError("update() is not implemented in the repository")
+
+    @abstractmethod
+    async def update_many(
+        self,
+        query: QueryT,
+        update_values: Dict[Any, Any],
     ) -> None:
         raise NotImplementedError("update() is not implemented in the repository")
 
     @abstractmethod
     async def delete(
         self,
-        obj: Optional[ModelT] = None,
-        query: Optional[QueryT] = None,
+        model: ModelT
+    ) -> None:
+        """Delete the object."""
+        raise NotImplementedError("delete() is not implemented in the repository")
+
+    @abstractmethod
+    async def delete_many(
+        self,
+        query: QueryT,
     ) -> None:
         """Delete the object."""
         raise NotImplementedError("delete() is not implemented in the repository")

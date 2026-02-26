@@ -1,4 +1,4 @@
-"""Классы схем для приложения ``manufacturers``."""
+"""Классы схем для приложения ``products``."""
 
 from typing import Optional
 
@@ -7,12 +7,12 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 
-class ManufacturerCreateSchema(BaseModel):
+class ProductCreateSchema(BaseModel):
     name: str
     description: Optional[str] = None
     created_by: Optional[int] = None
 
-class ManufacturerReadSchema(BaseModel):
+class ProductReadSchema(BaseModel):
     id: int
     name: str
     description: Optional[str] = None
@@ -21,13 +21,13 @@ class ManufacturerReadSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ManufacturerUpdateSchema(BaseModel):
+class ProductUpdateSchema(BaseModel):
     name: str
     description: Optional[str] = None
 
 
-class ManufacturerListSchema(BaseModel):
-    items: list[ManufacturerReadSchema]
+class ProductListSchema(BaseModel):
+    items: list[ProductReadSchema]
     total: int
 
 

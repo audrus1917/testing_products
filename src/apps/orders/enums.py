@@ -6,8 +6,14 @@ from enum import Enum
 class OrderStatus(str, Enum):
     """Возможный значения статуса заказа."""
 
-    PENDING = "PENDING" 
-    PAID = "PAID"
-    SHIPPED = "SHIPPED"
-    CANCELED = "CANCELED"
+    NOT_PAID = "Не оплачен"
+    PAID = "Оплачен"
+    IN_DELIVERY = "В доставке"
+    DELIVERED = "Доставлен"
+    CANCELED = "Отменен"
+
+
+class DeliveryMethod(str, Enum):
+    DELIVERY = "Доставка"
+    EXPRESS_DELIVERY = "Экспресс доставка"
 

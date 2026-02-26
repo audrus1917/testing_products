@@ -1,11 +1,12 @@
 """Базовый класс репозитория для ``SQLAlchemy``."""
 
-from typing import Type, Optional, TypeVar, Collection, Dict, Any
+from typing import Type, Optional, TypeVar, Collection, Dict, Any, Tuple
 
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update, delete, func
 from sqlalchemy.sql.selectable import Select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.core.utils import update_model_from_dict
 from src.core.error_wrapper import ErrorWrapper
 from src.core.database.exceptions import InvalidQueryError, NotFoundError
 from src.database.alchemy import Base
@@ -84,10 +85,19 @@ class AlchemyRepository[AlchemyModelT]:
     async def filter(
         self,
         query: Optional[Select] = None,
-    ) -> Collection[AlchemyModelT]:
+        **kwargs,
+    ) -> Tuple[Collection[AlchemyModelT], int]:
         overriden_query = self.get_initial_query(query)
+        query_filters = kwargs.pop("query_filters", None)
+        overriden_query = query_filters.filter(overriden_query) \
+            if query_filters else overriden_query
+
+        count_query =  select(func.count()).select_from(overriden_query.subquery())
+        count_result = await self.session.execute(count_query)
+        total = count_result.scalar_one()
+        
         result = await self.session.execute(overriden_query)
-        return result.scalars().all()
+        return (result.scalars().all(), total)
 
     async def save(
         self,
@@ -104,9 +114,20 @@ class AlchemyRepository[AlchemyModelT]:
 
     async def update(
         self,
-        obj: Optional[AlchemyModelT] = None,
-        query: Optional[Select] = None,
-        update_values: Optional[Dict[Any, Any]] = None,
+        model: AlchemyModelT,
+        update_values: Dict[Any, Any],
+    ) -> AlchemyModelT:
+        update_model_from_dict(model, update_values)
+        if model is not None and model not in self.session:
+            model = await self.session.merge(model)
+            self.session.add(model)
+        await self.session.flush()
+        return model
+
+    async def update_many(
+        self,
+        query: Select,
+        update_values: Dict[Any, Any],
     ) -> None:
         if isinstance(query, Select) and update_values:
             stmt = update(self.model)
@@ -116,14 +137,17 @@ class AlchemyRepository[AlchemyModelT]:
             await self.session.execute(
                 stmt.values(update_values).execution_options(synchronize_session=False)
             )
-        elif obj is not None and obj not in self.session:
-            obj = await self.session.merge(obj)
-            self.session.add(obj)
 
     async def delete(
         self,
-        obj: Optional[AlchemyModelT] = None,
-        query: Optional[Select] = None,
+        model: AlchemyModelT
+    ) -> None:
+        if model is not None:
+            await self.session.delete(model)
+
+    async def delete_many(
+        self,
+        query: Select
     ) -> None:
         if isinstance(query, Select):
             stmt = delete(self.model)
@@ -132,9 +156,6 @@ class AlchemyRepository[AlchemyModelT]:
             await self.session.execute(
                 stmt.execution_options(synchronize_session=False)
             )
-
-        if obj is not None:
-            await self.session.delete(obj)
 
     async def refresh(self, obj: AlchemyModelT) -> None:
         if obj not in self.session:

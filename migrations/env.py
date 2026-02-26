@@ -11,6 +11,10 @@ from src.core.config import get_settings
 
 from src.apps.users.models import User
 from src.apps.categories.models import Category
+from src.apps.manufacturers.models import Manufacturer
+from src.apps.products.models import Product
+from src.apps.clients.models import Client
+from src.apps.orders.models import Order, OrderItem
 from src.database.alchemy import METADATA
 
 

@@ -34,10 +34,12 @@ class AsyncCRUDService[ModelT](AsyncService):
     async def filter(
         self,
         query: Optional[QueryT] = None,
+        **kwargs
     ) -> Collection[ModelT]:
         """Возвращает коллекцию моделей, выбранных по запросу."""
 
-        return await self.repository.filter(query=query)
+        query_filters = kwargs.pop("filters")
+        return await self.repository.filter(query=query, query_filters=query_filters)
 
     async def create(self, obj_data: Union[dict, ModelT]) -> ModelT:
         """Создает и возвращает модель."""
@@ -54,22 +56,42 @@ class AsyncCRUDService[ModelT](AsyncService):
 
     async def update(
         self,
-        obj: Optional[ModelT] = None,
-        query: Optional[QueryT] = None,
-        update_values: Optional[Dict[Any, Any]] = None,
+        model: ModelT,
+        update_values: Dict[Any, Any],
+    ) -> ModelT:
+        """Обновляет выбранную модель или по заданному запросу :cls:`Select."""
+
+        async with self.uow:
+            updated_model = await self.repository.update(
+                model=model, 
+                update_values=update_values
+            )
+            await self.uow.commit()
+        return updated_model
+
+    async def update_many(
+        self,
+        query: QueryT,
+        update_values: Dict[Any, Any],
     ) -> None:
         """Обновляет выбранную модель или по заданному запросу :cls:`Select."""
 
         async with self.uow:
-            await self.repository.update(
-                obj=obj, query=query, update_values=update_values
+            await self.repository.update_many(
+                query=query, update_values=update_values
             )
             await self.uow.commit()
+
 
     async def delete(self, *filters, **kwargs_filters) -> None:
         async with self.uow:
             obj = await self.get(*filters, **kwargs_filters)
             await self.repository.delete(obj)
+            await self.uow.commit()
+
+    async def delete_many(self, query: QueryT) -> None:
+        async with self.uow:
+            await self.repository.delete_many(query=query)
             await self.uow.commit()
 
     def __repr__(self):

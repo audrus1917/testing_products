@@ -48,5 +48,12 @@ async def token(
             detail="Ошибка учетных данных"
         )
 
-    access_token = create_access_token(data={"user_id": user.id})
+    access_token = create_access_token(
+        data={
+            "user_id": user.id,
+            "email": user.email,
+            "is_active": user.is_active,
+            "is_superuser": user.is_superuser
+        }
+    )
     return {"access_token": access_token, "token_type": "bearer"}

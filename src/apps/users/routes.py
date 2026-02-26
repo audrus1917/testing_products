@@ -44,7 +44,7 @@ users_router = APIRouter(
     status_code=status.HTTP_201_CREATED,
 )
 @api_error_wrapper.decorate
-async def create(
+async def create_user(
     user_data: UserCreateSchema,
     service: UserService = Depends(get_service),
 ) -> UserReadSchema:

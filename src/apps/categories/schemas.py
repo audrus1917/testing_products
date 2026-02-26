@@ -24,6 +24,11 @@ class CategoryReadSchema(BaseModel):
 
 
 class CategoryUpdateSchema(BaseModel):
-    name: str
+    name: Optional[str] = None
     parent_id: Optional[int] = None
     description: Optional[str] = None
+
+
+class CategoryListSchema(BaseModel):
+    items: list[CategoryReadSchema]
+    total: int
