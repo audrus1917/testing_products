@@ -6,16 +6,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import redis.asyncio
-import aio_pika
 
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 
 from src.core.config import get_settings
 from src.database.alchemy import engine
-# from src.apps.auth.routes import auth_router
-# from src.apps.users.routes import users_router
-# from src.apps.orders.routes import orders_router
+from src.apps.auth.routes import auth_router
+from src.apps.users.routes import users_router
+from src.apps.manufacturers.routes import manufacturers_router
+from src.apps.categories.routes import categories_router
+from src.apps.products.routes import products_router
+from src.apps.clients.routes import clients_router
 
 from . import tags_metadata
 
@@ -64,6 +66,10 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
-# app.include_router(auth_router, tags=["auth"])
-# app.include_router(users_router, tags=["users"])
-# app.include_router(orders_router, tags=["orders"], prefix="/orders")
+app.include_router(auth_router, tags=["auth"], prefix="/auth")
+app.include_router(users_router, tags=["users"], prefix="/users")
+app.include_router(categories_router, tags=["categories"], prefix="/categories")
+app.include_router(manufacturers_router, tags=["manufacturers"], prefix="/manufacturers")
+app.include_router(products_router, tags=["products"], prefix="/products")
+app.include_router(clients_router, tags=["clients"], prefix="/clients")
+

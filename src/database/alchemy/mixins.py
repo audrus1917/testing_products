@@ -2,7 +2,7 @@
 
 import datetime
 
-from sqlalchemy import DateTime
+from sqlalchemy import DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.core.config import get_settings
@@ -15,11 +15,13 @@ class ChangedAtMixin:
     """Миксин для полей ``..._at`` (дата / время)."""
 
     created_at: Mapped[datetime.datetime] = mapped_column(
-        DateTime(timezone=True), default=datetime.datetime.now(tz=TZ)
+        DateTime(timezone=True), 
+        default=datetime.datetime.now(tz=TZ),
+        server_default=func.now()
     )
 
 
-class JSONRepresentationMixin:
+class JSONMixin:
     def to_json(self) -> dict:
         return {
             column: value

@@ -18,6 +18,8 @@ class AlchemyUnitOfWork(AsyncUnitOfWork):
         )
 
     async def begin(self):
+        if self.session.in_transaction():
+            return
         await self.session.begin()
 
     async def rollback(self):
