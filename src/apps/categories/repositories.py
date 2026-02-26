@@ -74,3 +74,11 @@ class CategoryRepository(AlchemyRepository):
                     "является потомком"
                 )
         return await super().update(model=model, update_values=update_values)
+
+    async def get_leaves(self) -> Sequence[Category]:
+        result = await self.session.execute(
+            select(self.model).where(
+                ~self.model.children.any()
+            )
+        )
+        return result.scalars().all()

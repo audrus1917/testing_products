@@ -29,6 +29,10 @@ async def get_session():
         engine, class_=AsyncSession, expire_on_commit=False
     )
     async with async_session() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
         yield session
 
 
@@ -40,4 +44,9 @@ def get_session_sync():
     )
     Session = sessionmaker(sync_engine)
     with Session() as session:
+        try:
+            yield session
+        finally:
+            session.close()
         yield session
+
