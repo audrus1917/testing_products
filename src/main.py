@@ -1,0 +1,75 @@
+"""Подготовка и создание приложения."""
+
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+import redis.asyncio
+
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import RedisBackend
+
+from src.core.config import get_settings
+from src.database.alchemy import engine
+from src.apps.auth.routes import auth_router
+from src.apps.users.routes import users_router
+from src.apps.manufacturers.routes import manufacturers_router
+from src.apps.categories.routes import categories_router
+from src.apps.products.routes import products_router
+from src.apps.clients.routes import clients_router
+
+from . import tags_metadata
+
+settings = get_settings()
+
+
+class BaseAPI(FastAPI):
+    """Базовое ASGI-приложение."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.router.prefix = settings.APPLICATION.BASE_API_PREFIX
+
+
+@asynccontextmanager
+async def lifespan(app: BaseAPI) -> AsyncIterator[None]:
+    """Цикл начала и завершения работы приложения."""
+
+    redis_back = redis.asyncio.Redis.from_url(
+        settings.REDIS.uri,
+        encoding='utf-8',
+        decode_responses=True,
+    )
+    FastAPICache.init(RedisBackend(redis_back), prefix='orders-cache')
+
+    yield
+
+    await redis_back.close()
+    engine.clear_compiled_cache()
+    await engine.dispose()
+
+
+app = BaseAPI(
+    debug=settings.DEBUG,
+    title=settings.APPLICATION.PROJECT_NAME,
+    description=settings.APPLICATION.PROJECT_DESCRIPTION,
+    version=str(settings.APPLICATION.API_VERSION) + '.0',
+    lifespan=lifespan,
+    openapi_tags=tags_metadata,
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.ALLOW_ORIGINS,
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
+
+app.include_router(auth_router, tags=["auth"], prefix="/auth")
+app.include_router(users_router, tags=["users"], prefix="/users")
+app.include_router(categories_router, tags=["categories"], prefix="/categories")
+app.include_router(manufacturers_router, tags=["manufacturers"], prefix="/manufacturers")
+app.include_router(products_router, tags=["products"], prefix="/products")
+app.include_router(clients_router, tags=["clients"], prefix="/clients")
+
