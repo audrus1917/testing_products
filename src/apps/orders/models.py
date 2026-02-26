@@ -105,9 +105,6 @@ class OrderItem(
         Integer,
         primary_key=True
     )
-#     order_status = models.ForeignKey("OrderStatus", verbose_name=_("статус заказа"), on_delete=models.CASCADE)
-#     delivery = models.ForeignKey("Delivery", verbose_name=_("доставка"), on_delete=models.CASCADE)
-
     product_id: Mapped[int] = mapped_column(
         Integer,
         ForeignKey("products.id"),
@@ -119,12 +116,12 @@ class OrderItem(
         nullable=False
     )
     product = relationship(
-        "Client",
+        "Product",
         lazy="select",
         uselist=False
     )
     order = relationship(
-        "Order",
+        Order,
         lazy="select",
         uselist=False
     )

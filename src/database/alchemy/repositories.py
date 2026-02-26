@@ -121,7 +121,7 @@ class AlchemyRepository[AlchemyModelT]:
         if model is not None and model not in self.session:
             model = await self.session.merge(model)
             self.session.add(model)
-        await self.session.flush()
+        await self.session.flush([model,])
         return model
 
     async def update_many(
