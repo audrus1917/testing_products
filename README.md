@@ -37,7 +37,7 @@
 * [cсылка на репозиторий с тестовым заданием](https://github.com/audrus1917/testing_products)
 * [ссылка на схему БД](https://github.com/audrus1917/testing_products/blob/dev/data/database_schema.psql)
 * [ссылка на дамп с простым случайным набором данных](https://github.com/audrus1917/testing_products/blob/dev/data/database.psql)
-* [ссылка на скрипт для заполнения этими данными](https://github.com/audrus1917/audrus1917/testing_products/blob/dev/commands/data_loader.py)
+* [ссылка на скрипт для заполнения этими данными](https://github.com/audrus1917/testing_products/blob/dev/commands/data_loader.py)
 
 ## Приложения
 
