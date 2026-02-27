@@ -165,8 +165,8 @@ class Loader:
         if total == 0:
             for idx in range(1, 11):
                 item = {
-                    "last_name": fake.last_name(),
-                    "first_name": fake.first_name(),
+                    "last_name": fake.last_name_male(),
+                    "first_name": fake.first_name_male(),
                     "phone": fake.phone_number(),
                     "address": fake.address(),
                     "balance": round(random.uniform(500, 10000), 2)

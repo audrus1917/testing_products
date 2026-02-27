@@ -37,7 +37,7 @@
 * [cсылка на репозиторий с тестовым заданием](https://github.com/audrus1917/testing_products)
 * [ссылка на схему БД](https://github.com/audrus1917/testing_products/blob/dev/data/database_schema.psql)
 * [ссылка на дамп с простым случайным набором данных](https://github.com/audrus1917/testing_products/blob/dev/data/database.psql)
-* [ссылка на скрипт для заполнения этими данными](/audrus1917/testing_products/commands/data_loader.py)
+* [ссылка на скрипт для заполнения этими данными](https://github.com/audrus1917/audrus1917/testing_products/blob/dev/commands/data_loader.py)
 
 ## Приложения
 
@@ -48,4 +48,117 @@
 * `products` - товары
 * `clients` - клиенты
 * `orders` - заказы и заказанные товары
+
+## Примеры запросов
+
+### Получение информации о сумме товаров заказанных под каждого клиента (Наименование клиента, сумма)
+
+```sql
+-- Получение информации о сумме товаров заказанных под каждого клиента (Наименование клиента, сумма)
+SELECT 
+    c.id AS client_id,
+    CONCAT(c.last_name, ' ', c.first_name) AS full_name,
+    SUM(i.amount * i.price)::money AS client_amount
+FROM clients AS c
+JOIN orders AS o ON c.id = o.client_id
+JOIN order_items AS i ON i.order_id = o.id
+GROUP BY c.id
+```
+
+### Найти количество дочерних элементов первого уровня вложенности для категорий номенклатуры.
+
+```sql
+-- Найти количество дочерних элементов первого уровня вложенности для категорий номенклатуры.
+
+SELECT
+    c.name,
+    COUNT(*) AS children_total
+FROM categories AS c
+JOIN categories AS cc ON cc.parent_id = c.id
+GROUP BY 1
+ORDER BY 1
+```
+
+### Написать текст запроса для отчета (view) «Топ-5 самых покупаемых товаров за последний месяц» 
+
+По количеству штук в заказах. В отчете должны быть: Наименование товара, Категория 1-го уровня, Общее количество проданных штук.
+
+```sql
+
+-- Написать текст запроса для отчета (view) «Топ-5 самых покупаемых товаров за последний месяц»
+
+WITH total_products AS (
+    SELECT
+        p.id,
+        count(*) AS total
+    FROM products AS p
+    JOIN order_items AS i ON i.product_id = p.id
+    JOIN orders AS o ON i.order_id = o.id
+    WHERE o.payment_date BETWEEN CURRENT_DATE - INTERVAL '1 month' AND CURRENT_DATE
+    GROUP BY p.id
+)
+
+SELECT  
+    t.id AS product_id,
+    p.name AS product_name,
+    c.name AS category_name,
+    t.total
+FROM total_products AS t 
+JOIN products AS p ON p.id = t.id
+JOIN categories AS c ON c.id = p.category_id
+ORDER BY t.total DESC LIMIT 5
+```
+
+### Примеры рекурсивных запросов для категорий
+
+#### Поиск всех "предков"
+
+Для категории с `ID = 8`
+
+```sql
+WITH RECURSIVE ancestor_path AS (
+    SELECT id, name, parent_id, 0 AS level
+    FROM categories
+    WHERE id = 8
+    UNION ALL
+    SELECT c.id, c.name, c.parent_id, ap.level + 1
+    FROM categories c
+    JOIN ancestor_path ap ON c.id = ap.parent_id
+)
+SELECT * FROM ancestor_path ORDER BY level DESC
+```
+
+#### "Дерево"
+
+```sql
+WITH RECURSIVE subordinates AS (
+    SELECT 
+        c.id, 
+        c.name, 
+        c.parent_id,
+        1 AS level,
+        ARRAY[c.parent_id] AS path
+    FROM 
+        categories AS c
+    WHERE 
+        c.id = 1
+
+    UNION ALL
+    SELECT 
+        c.id, 
+        c.name, 
+        c.parent_id,
+        s.level + 1 AS level,
+        s.path || c.parent_id
+    FROM 
+        categories AS c
+    JOIN 
+        subordinates AS s ON c.parent_id = s.id
+)
+SELECT 
+    id,
+    CONCAT(REPEAT('  ', level), name)
+FROM subordinates ORDER BY COALESCE(parent_id, 0), path;
+```
+
 
