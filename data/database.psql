@@ -1,0 +1,952 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 14.3 (Ubuntu 14.3-1.pgdg20.04+1)
+-- Dumped by pg_dump version 14.0 (Ubuntu 14.0-1.pgdg20.04+1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: deliverymethod; Type: TYPE; Schema: public; Owner: andrus
+--
+
+CREATE TYPE public.deliverymethod AS ENUM (
+    'DELIVERY',
+    'EXPRESS_DELIVERY'
+);
+
+
+ALTER TYPE public.deliverymethod OWNER TO andrus;
+
+--
+-- Name: orderstatus; Type: TYPE; Schema: public; Owner: andrus
+--
+
+CREATE TYPE public.orderstatus AS ENUM (
+    'NOT_PAID',
+    'PAID',
+    'IN_DELIVERY',
+    'DELIVERED',
+    'CANCELED'
+);
+
+
+ALTER TYPE public.orderstatus OWNER TO andrus;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: alembic_version; Type: TABLE; Schema: public; Owner: andrus
+--
+
+CREATE TABLE public.alembic_version (
+    version_num character varying(32) NOT NULL
+);
+
+
+ALTER TABLE public.alembic_version OWNER TO andrus;
+
+--
+-- Name: categories; Type: TABLE; Schema: public; Owner: andrus
+--
+
+CREATE TABLE public.categories (
+    id integer NOT NULL,
+    parent_id integer,
+    name character varying(255) NOT NULL,
+    description text,
+    created_by integer,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE public.categories OWNER TO andrus;
+
+--
+-- Name: categories_id_seq; Type: SEQUENCE; Schema: public; Owner: andrus
+--
+
+CREATE SEQUENCE public.categories_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.categories_id_seq OWNER TO andrus;
+
+--
+-- Name: categories_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: andrus
+--
+
+ALTER SEQUENCE public.categories_id_seq OWNED BY public.categories.id;
+
+
+--
+-- Name: clients; Type: TABLE; Schema: public; Owner: andrus
+--
+
+CREATE TABLE public.clients (
+    id integer NOT NULL,
+    last_name character varying(255) NOT NULL,
+    first_name character varying(255) NOT NULL,
+    address text NOT NULL,
+    phone character varying(32),
+    balance numeric(15,2) NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.clients OWNER TO andrus;
+
+--
+-- Name: clients_id_seq; Type: SEQUENCE; Schema: public; Owner: andrus
+--
+
+CREATE SEQUENCE public.clients_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.clients_id_seq OWNER TO andrus;
+
+--
+-- Name: clients_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: andrus
+--
+
+ALTER SEQUENCE public.clients_id_seq OWNED BY public.clients.id;
+
+
+--
+-- Name: manufacturers; Type: TABLE; Schema: public; Owner: andrus
+--
+
+CREATE TABLE public.manufacturers (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    description text,
+    created_by integer,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE public.manufacturers OWNER TO andrus;
+
+--
+-- Name: manufacturers_id_seq; Type: SEQUENCE; Schema: public; Owner: andrus
+--
+
+CREATE SEQUENCE public.manufacturers_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.manufacturers_id_seq OWNER TO andrus;
+
+--
+-- Name: manufacturers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: andrus
+--
+
+ALTER SEQUENCE public.manufacturers_id_seq OWNED BY public.manufacturers.id;
+
+
+--
+-- Name: order_items; Type: TABLE; Schema: public; Owner: andrus
+--
+
+CREATE TABLE public.order_items (
+    id integer NOT NULL,
+    product_id integer NOT NULL,
+    order_id integer NOT NULL,
+    price numeric(12,2) NOT NULL,
+    amount numeric(12,2) NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.order_items OWNER TO andrus;
+
+--
+-- Name: order_items_id_seq; Type: SEQUENCE; Schema: public; Owner: andrus
+--
+
+CREATE SEQUENCE public.order_items_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.order_items_id_seq OWNER TO andrus;
+
+--
+-- Name: order_items_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: andrus
+--
+
+ALTER SEQUENCE public.order_items_id_seq OWNED BY public.order_items.id;
+
+
+--
+-- Name: orders; Type: TABLE; Schema: public; Owner: andrus
+--
+
+CREATE TABLE public.orders (
+    id integer NOT NULL,
+    order_no character varying(50) NOT NULL,
+    client_id integer,
+    registration_date date,
+    payment_date date,
+    delivery_date date,
+    status public.orderstatus NOT NULL,
+    delivery public.deliverymethod NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.orders OWNER TO andrus;
+
+--
+-- Name: orders_id_seq; Type: SEQUENCE; Schema: public; Owner: andrus
+--
+
+CREATE SEQUENCE public.orders_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.orders_id_seq OWNER TO andrus;
+
+--
+-- Name: orders_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: andrus
+--
+
+ALTER SEQUENCE public.orders_id_seq OWNED BY public.orders.id;
+
+
+--
+-- Name: products; Type: TABLE; Schema: public; Owner: andrus
+--
+
+CREATE TABLE public.products (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    description text,
+    created_by integer,
+    manufacturer_id integer,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    price numeric(12,2) NOT NULL,
+    category_id integer NOT NULL
+);
+
+
+ALTER TABLE public.products OWNER TO andrus;
+
+--
+-- Name: products_id_seq; Type: SEQUENCE; Schema: public; Owner: andrus
+--
+
+CREATE SEQUENCE public.products_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.products_id_seq OWNER TO andrus;
+
+--
+-- Name: products_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: andrus
+--
+
+ALTER SEQUENCE public.products_id_seq OWNED BY public.products.id;
+
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: andrus
+--
+
+CREATE TABLE public.users (
+    id integer NOT NULL,
+    email character varying(320) NOT NULL,
+    hashed_password character varying(1024) NOT NULL,
+    is_active boolean NOT NULL,
+    is_superuser boolean NOT NULL,
+    created_at timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.users OWNER TO andrus;
+
+--
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: andrus
+--
+
+CREATE SEQUENCE public.users_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.users_id_seq OWNER TO andrus;
+
+--
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: andrus
+--
+
+ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
+
+
+--
+-- Name: categories id; Type: DEFAULT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.categories ALTER COLUMN id SET DEFAULT nextval('public.categories_id_seq'::regclass);
+
+
+--
+-- Name: clients id; Type: DEFAULT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.clients ALTER COLUMN id SET DEFAULT nextval('public.clients_id_seq'::regclass);
+
+
+--
+-- Name: manufacturers id; Type: DEFAULT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.manufacturers ALTER COLUMN id SET DEFAULT nextval('public.manufacturers_id_seq'::regclass);
+
+
+--
+-- Name: order_items id; Type: DEFAULT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.order_items ALTER COLUMN id SET DEFAULT nextval('public.order_items_id_seq'::regclass);
+
+
+--
+-- Name: orders id; Type: DEFAULT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.orders ALTER COLUMN id SET DEFAULT nextval('public.orders_id_seq'::regclass);
+
+
+--
+-- Name: products id; Type: DEFAULT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.products ALTER COLUMN id SET DEFAULT nextval('public.products_id_seq'::regclass);
+
+
+--
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- Data for Name: alembic_version; Type: TABLE DATA; Schema: public; Owner: andrus
+--
+
+COPY public.alembic_version (version_num) FROM stdin;
+f5625038453c
+\.
+
+
+--
+-- Data for Name: categories; Type: TABLE DATA; Schema: public; Owner: andrus
+--
+
+COPY public.categories (id, parent_id, name, description, created_by, created_at) FROM stdin;
+300	\N	Бытовая техника	\N	\N	2026-02-26 15:23:48.06551+03
+301	300	Стиральные машины	\N	\N	2026-02-26 15:23:48.06551+03
+302	300	Холодильники	\N	\N	2026-02-26 15:23:48.06551+03
+303	302	Однокамерные	\N	\N	2026-02-26 15:23:48.06551+03
+304	302	Двухкамерные	\N	\N	2026-02-26 15:23:48.06551+03
+305	300	Телевизоры	\N	\N	2026-02-26 15:23:48.06551+03
+306	300	Пылесосы	\N	\N	2026-02-26 15:23:48.06551+03
+307	300	Компьютеры	\N	\N	2026-02-26 15:23:48.06551+03
+308	307	Ноутбуки	\N	\N	2026-02-26 15:23:48.06551+03
+309	308	13''	\N	\N	2026-02-26 15:23:48.06551+03
+310	308	15''	\N	\N	2026-02-26 15:23:48.06551+03
+311	308	17''	\N	\N	2026-02-26 15:23:48.06551+03
+312	307	Моноблоки	\N	\N	2026-02-26 15:23:48.06551+03
+313	307	Системные блоки	\N	\N	2026-02-26 15:23:48.06551+03
+\.
+
+
+--
+-- Data for Name: clients; Type: TABLE DATA; Schema: public; Owner: andrus
+--
+
+COPY public.clients (id, last_name, first_name, address, phone, balance, created_at) FROM stdin;
+1	Калинин	Сила	клх Шарья, наб. Достоевского, д. 2 к. 3/5, 165416	8 (794) 385-3221	6385.49	2026-02-26 15:23:48.06551+03
+2	Исаев	Герман	п. Гремячинск (Бурят.), пер. Дружба, д. 1/3 к. 9/8, 211074	8 (589) 120-3491	4890.34	2026-02-26 15:23:48.06551+03
+3	Зиновьев	Панкрат	ст. Стрежевой, пр. Локомотивный, д. 85 к. 34, 154462	8 465 065 2782	5957.72	2026-02-26 15:23:48.06551+03
+4	Дьячкова	Милан	к. Зарайск, пер. Шоссейный, д. 9/3, 701929	+7 (710) 865-6640	7145.11	2026-02-26 15:23:48.06551+03
+5	Самойлова	Севастьян	г. Александров Гай, пр. Привокзальный, д. 2 к. 85, 322551	8 (541) 603-86-41	6205.43	2026-02-26 15:23:48.06551+03
+6	Уваров	Селиван	г. Эльтон, ш. 1 Мая, д. 481, 425464	+7 (362) 793-06-97	8521.16	2026-02-26 15:23:48.06551+03
+7	Павлов	Аполлон	клх Каргополь, бул. Колхозный, д. 6/2 стр. 216, 735127	+7 985 633 4877	512.68	2026-02-26 15:23:48.06551+03
+8	Миронова	Зосима	с. Наро-Фоминск, пр. Ударный, д. 11 стр. 6/2, 757645	8 (901) 301-84-42	8612.89	2026-02-26 15:23:48.06551+03
+9	Лыткин	Глеб	к. Валдай, алл. Иркутская, д. 8/8 к. 8, 072843	8 729 258 3699	5868.94	2026-02-26 15:23:48.06551+03
+10	Блинов	Артемий	с. Саров (Морд.), пер. Азовский, д. 63 к. 68, 389629	+7 (254) 802-68-54	7884.93	2026-02-26 15:23:48.06551+03
+\.
+
+
+--
+-- Data for Name: manufacturers; Type: TABLE DATA; Schema: public; Owner: andrus
+--
+
+COPY public.manufacturers (id, name, description, created_by, created_at) FROM stdin;
+113	Haier	\N	\N	2026-02-26 15:23:48.06551+03
+114	LG Electronics	\N	\N	2026-02-26 15:23:48.06551+03
+115	BEKO	\N	\N	2026-02-26 15:23:48.06551+03
+116	Ariston	\N	\N	2026-02-26 15:23:48.06551+03
+117	Atlant	\N	\N	2026-02-26 15:23:48.06551+03
+118	Gefest	\N	\N	2026-02-26 15:23:48.06551+03
+119	Kitfort	\N	\N	2026-02-26 15:23:48.06551+03
+120	Redmond	\N	\N	2026-02-26 15:23:48.06551+03
+121	Бирюса	\N	\N	2026-02-26 15:23:48.06551+03
+122	Scarlett	\N	\N	2026-02-26 15:23:48.06551+03
+123	Horizont	\N	\N	2026-02-26 15:23:48.06551+03
+124	Candy	\N	\N	2026-02-26 15:23:48.06551+03
+125	Midea	\N	\N	2026-02-26 15:23:48.06551+03
+126	Gorenje	\N	\N	2026-02-26 15:23:48.06551+03
+\.
+
+
+--
+-- Data for Name: order_items; Type: TABLE DATA; Schema: public; Owner: andrus
+--
+
+COPY public.order_items (id, product_id, order_id, price, amount, created_at) FROM stdin;
+1	204	2	19783.00	2.00	2026-02-26 15:25:11.135575+03
+2	214	2	14127.00	2.00	2026-02-26 15:25:11.135575+03
+3	212	2	6980.00	3.00	2026-02-26 15:25:11.135575+03
+4	208	2	11282.00	2.00	2026-02-26 15:25:11.135575+03
+5	189	3	19233.00	1.00	2026-02-26 15:25:11.135575+03
+6	190	4	16990.00	3.00	2026-02-26 15:25:11.135575+03
+7	193	4	2657.00	1.00	2026-02-26 15:25:11.135575+03
+8	206	4	18031.00	2.00	2026-02-26 15:25:11.135575+03
+9	206	4	18031.00	2.00	2026-02-26 15:25:11.135575+03
+10	199	5	11589.00	1.00	2026-02-26 15:25:11.135575+03
+11	208	5	11282.00	1.00	2026-02-26 15:25:11.135575+03
+12	200	5	16065.00	1.00	2026-02-26 15:25:11.135575+03
+13	187	5	18161.00	1.00	2026-02-26 15:25:11.135575+03
+14	189	5	19233.00	2.00	2026-02-26 15:25:11.135575+03
+15	212	6	6980.00	1.00	2026-02-26 15:25:11.135575+03
+16	201	6	17870.00	2.00	2026-02-26 15:25:11.135575+03
+17	209	6	14531.00	1.00	2026-02-26 15:25:11.135575+03
+18	195	6	4406.00	2.00	2026-02-26 15:25:11.135575+03
+19	207	7	14117.00	2.00	2026-02-26 15:25:11.135575+03
+20	203	8	6111.00	1.00	2026-02-26 15:25:11.135575+03
+21	203	8	6111.00	1.00	2026-02-26 15:25:11.135575+03
+22	194	9	11879.00	1.00	2026-02-26 15:25:11.135575+03
+23	194	9	11879.00	1.00	2026-02-26 15:25:11.135575+03
+24	210	10	14139.00	1.00	2026-02-26 15:25:11.135575+03
+25	201	10	17870.00	2.00	2026-02-26 15:25:11.135575+03
+26	188	10	9567.00	3.00	2026-02-26 15:25:11.135575+03
+27	204	10	19783.00	1.00	2026-02-26 15:25:11.135575+03
+28	194	11	11879.00	2.00	2026-02-26 15:25:11.135575+03
+29	207	11	14117.00	2.00	2026-02-26 15:25:11.135575+03
+30	197	11	18006.00	3.00	2026-02-26 15:25:11.135575+03
+31	210	12	14139.00	2.00	2026-02-26 15:25:11.135575+03
+32	195	13	4406.00	2.00	2026-02-26 15:25:11.135575+03
+33	211	13	11397.00	3.00	2026-02-26 15:25:11.135575+03
+34	212	14	6980.00	1.00	2026-02-26 15:25:11.135575+03
+35	189	15	19233.00	1.00	2026-02-26 15:25:11.135575+03
+36	191	15	9214.00	3.00	2026-02-26 15:25:11.135575+03
+37	191	15	9214.00	3.00	2026-02-26 15:25:11.135575+03
+38	190	15	16990.00	3.00	2026-02-26 15:25:11.135575+03
+39	194	16	11879.00	1.00	2026-02-26 15:25:11.135575+03
+40	213	17	13643.00	3.00	2026-02-26 15:25:11.135575+03
+41	200	17	16065.00	3.00	2026-02-26 15:25:11.135575+03
+42	214	17	14127.00	3.00	2026-02-26 15:25:11.135575+03
+43	189	17	19233.00	2.00	2026-02-26 15:25:11.135575+03
+44	196	17	19802.00	3.00	2026-02-26 15:25:11.135575+03
+45	201	18	17870.00	2.00	2026-02-26 15:25:11.135575+03
+46	212	18	6980.00	3.00	2026-02-26 15:25:11.135575+03
+47	188	18	9567.00	2.00	2026-02-26 15:25:11.135575+03
+48	188	18	9567.00	1.00	2026-02-26 15:25:11.135575+03
+49	190	18	16990.00	2.00	2026-02-26 15:25:11.135575+03
+50	206	19	18031.00	1.00	2026-02-26 15:25:11.135575+03
+51	214	19	14127.00	3.00	2026-02-26 15:25:11.135575+03
+52	209	20	14531.00	3.00	2026-02-26 15:25:11.135575+03
+53	211	20	11397.00	1.00	2026-02-26 15:25:11.135575+03
+54	189	20	19233.00	1.00	2026-02-26 15:25:11.135575+03
+55	209	21	14531.00	1.00	2026-02-26 15:25:11.135575+03
+56	186	22	13931.00	2.00	2026-02-26 15:25:11.135575+03
+57	189	22	19233.00	3.00	2026-02-26 15:25:11.135575+03
+58	197	22	18006.00	2.00	2026-02-26 15:25:11.135575+03
+59	206	22	18031.00	1.00	2026-02-26 15:25:11.135575+03
+60	201	23	17870.00	3.00	2026-02-26 15:25:11.135575+03
+61	192	23	10464.00	2.00	2026-02-26 15:25:11.135575+03
+62	208	24	11282.00	3.00	2026-02-26 15:25:11.135575+03
+63	202	24	6338.00	1.00	2026-02-26 15:25:11.135575+03
+64	202	24	6338.00	1.00	2026-02-26 15:25:11.135575+03
+65	202	24	6338.00	3.00	2026-02-26 15:25:11.135575+03
+66	204	24	19783.00	3.00	2026-02-26 15:25:11.135575+03
+67	188	25	9567.00	2.00	2026-02-26 15:25:11.135575+03
+68	206	25	18031.00	3.00	2026-02-26 15:25:11.135575+03
+69	214	25	14127.00	3.00	2026-02-26 15:25:11.135575+03
+70	206	26	18031.00	3.00	2026-02-26 15:25:11.135575+03
+71	211	26	11397.00	2.00	2026-02-26 15:25:11.135575+03
+72	198	27	14187.00	2.00	2026-02-26 15:25:11.135575+03
+73	200	27	16065.00	2.00	2026-02-26 15:25:11.135575+03
+74	207	28	14117.00	2.00	2026-02-26 15:25:11.135575+03
+75	193	28	2657.00	3.00	2026-02-26 15:25:11.135575+03
+76	199	28	11589.00	2.00	2026-02-26 15:25:11.135575+03
+77	189	28	19233.00	3.00	2026-02-26 15:25:11.135575+03
+78	189	28	19233.00	1.00	2026-02-26 15:25:11.135575+03
+79	207	29	14117.00	1.00	2026-02-26 15:25:11.135575+03
+80	207	29	14117.00	3.00	2026-02-26 15:25:11.135575+03
+81	198	29	14187.00	1.00	2026-02-26 15:25:11.135575+03
+82	205	29	2467.00	3.00	2026-02-26 15:25:11.135575+03
+83	199	29	11589.00	1.00	2026-02-26 15:25:11.135575+03
+84	205	30	2467.00	1.00	2026-02-26 15:25:11.135575+03
+85	187	30	18161.00	2.00	2026-02-26 15:25:11.135575+03
+86	192	30	10464.00	1.00	2026-02-26 15:25:11.135575+03
+87	211	30	11397.00	3.00	2026-02-26 15:25:11.135575+03
+88	207	31	14117.00	2.00	2026-02-26 15:25:11.135575+03
+89	199	31	11589.00	3.00	2026-02-26 15:25:11.135575+03
+90	200	31	16065.00	2.00	2026-02-26 15:25:11.135575+03
+91	186	31	13931.00	3.00	2026-02-26 15:25:11.135575+03
+92	195	32	4406.00	2.00	2026-02-26 15:25:11.135575+03
+93	207	33	14117.00	1.00	2026-02-26 15:25:11.135575+03
+94	193	34	2657.00	2.00	2026-02-26 15:25:11.135575+03
+95	201	34	17870.00	2.00	2026-02-26 15:25:11.135575+03
+96	206	34	18031.00	2.00	2026-02-26 15:25:11.135575+03
+97	188	34	9567.00	2.00	2026-02-26 15:25:11.135575+03
+98	205	35	2467.00	2.00	2026-02-26 15:25:11.135575+03
+99	200	36	16065.00	1.00	2026-02-26 15:25:11.135575+03
+100	209	36	14531.00	1.00	2026-02-26 15:25:11.135575+03
+101	199	36	11589.00	1.00	2026-02-26 15:25:11.135575+03
+102	203	36	6111.00	3.00	2026-02-26 15:25:11.135575+03
+103	189	36	19233.00	3.00	2026-02-26 15:25:11.135575+03
+104	203	37	6111.00	1.00	2026-02-26 15:25:11.135575+03
+105	207	38	14117.00	2.00	2026-02-26 15:25:11.135575+03
+106	208	38	11282.00	1.00	2026-02-26 15:25:11.135575+03
+107	187	39	18161.00	3.00	2026-02-26 15:25:11.135575+03
+108	195	39	4406.00	1.00	2026-02-26 15:25:11.135575+03
+109	193	40	2657.00	2.00	2026-02-26 15:25:11.135575+03
+110	202	40	6338.00	3.00	2026-02-26 15:25:11.135575+03
+111	187	40	18161.00	1.00	2026-02-26 15:25:11.135575+03
+112	191	40	9214.00	3.00	2026-02-26 15:25:11.135575+03
+113	206	40	18031.00	2.00	2026-02-26 15:25:11.135575+03
+114	202	41	6338.00	1.00	2026-02-26 15:25:11.135575+03
+115	194	41	11879.00	1.00	2026-02-26 15:25:11.135575+03
+116	197	41	18006.00	3.00	2026-02-26 15:25:11.135575+03
+117	194	42	11879.00	1.00	2026-02-26 15:25:11.135575+03
+118	196	42	19802.00	3.00	2026-02-26 15:25:11.135575+03
+119	186	42	13931.00	3.00	2026-02-26 15:25:11.135575+03
+120	186	43	13931.00	1.00	2026-02-26 15:25:11.135575+03
+121	194	43	11879.00	3.00	2026-02-26 15:25:11.135575+03
+122	196	43	19802.00	1.00	2026-02-26 15:25:11.135575+03
+123	198	44	14187.00	3.00	2026-02-26 15:25:11.135575+03
+124	189	45	19233.00	3.00	2026-02-26 15:25:11.135575+03
+125	204	45	19783.00	3.00	2026-02-26 15:25:11.135575+03
+126	191	46	9214.00	3.00	2026-02-26 15:25:11.135575+03
+127	208	46	11282.00	1.00	2026-02-26 15:25:11.135575+03
+137	209	2	1001.00	18.00	2026-02-26 17:30:17.713538+03
+\.
+
+
+--
+-- Data for Name: orders; Type: TABLE DATA; Schema: public; Owner: andrus
+--
+
+COPY public.orders (id, order_no, client_id, registration_date, payment_date, delivery_date, status, delivery, created_at) FROM stdin;
+2	4D66AD6C	1	2026-01-12	2026-01-16	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+3	289D4210	1	2025-12-30	2026-01-01	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+4	08DFB3E4	1	2026-02-23	2026-02-27	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+5	11EFD168	1	2025-12-06	2025-12-08	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+6	1E5EA306	1	2026-01-28	2026-01-30	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+7	17C12D76	1	2026-02-24	2026-02-27	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+8	79FFCAE8	2	2026-01-16	2026-01-17	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+9	7D1B4CBB	2	2026-01-03	2026-01-07	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+10	4A332BF3	2	2026-01-07	2026-01-09	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+11	5C1DE526	2	2026-02-11	2026-02-15	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+12	34DFC860	2	2026-02-01	2026-02-05	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+13	55B2560F	2	2025-12-13	2025-12-16	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+14	457B3958	3	2026-01-17	2026-01-20	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+15	3658BF9D	3	2025-12-23	2025-12-27	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+16	D47B07FB	3	2026-01-30	2026-02-01	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+17	E0C45E0D	4	2026-01-21	2026-01-25	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+18	A2FD1617	4	2026-02-09	2026-02-12	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+19	DA95EC2E	4	2025-12-19	2025-12-22	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+20	1D21DE97	4	2026-02-13	2026-02-15	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+21	3F74C45C	4	2026-02-11	2026-02-15	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+22	FDF2EDC9	5	2025-12-11	2025-12-14	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+23	38D78AE6	5	2025-12-02	2025-12-05	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+24	789998E3	5	2025-12-27	2025-12-28	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+25	BCDA569D	5	2025-12-26	2025-12-28	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+26	D44B9A21	5	2025-12-20	2025-12-23	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+27	EBA1BB1A	5	2026-02-20	2026-02-22	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+28	C8260203	6	2025-12-30	2026-01-01	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+29	45641D1C	6	2026-02-17	2026-02-21	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+30	060DAB63	6	2025-12-31	2026-01-02	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+31	CC6B943D	6	2026-02-04	2026-02-08	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+32	BAA0BF89	6	2025-12-13	2025-12-16	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+33	688D0718	6	2025-12-18	2025-12-21	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+34	31F59C61	7	2025-12-04	2025-12-06	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+35	5389F9BF	7	2026-01-25	2026-01-29	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+36	402DAE62	7	2025-11-30	2025-12-02	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+37	ABDFB454	7	2026-02-18	2026-02-21	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+38	A9FE637B	8	2026-01-29	2026-01-31	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+39	BB1F90D7	8	2025-12-20	2025-12-21	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+40	6F47B59C	8	2025-12-31	2026-01-02	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+41	05A7A2A1	8	2026-02-12	2026-02-13	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+42	2BDA82C5	8	2026-01-19	2026-01-22	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+43	1046A155	9	2025-12-03	2025-12-07	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+44	33A766C0	9	2026-02-02	2026-02-04	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+45	42821EC7	9	2026-02-10	2026-02-14	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+46	337ED32B	10	2025-12-13	2025-12-14	\N	PAID	DELIVERY	2026-02-26 15:25:11.135575+03
+\.
+
+
+--
+-- Data for Name: products; Type: TABLE DATA; Schema: public; Owner: andrus
+--
+
+COPY public.products (id, name, description, created_by, manufacturer_id, created_at, price, category_id) FROM stdin;
+186	Стиральные машины, модель G-0	Описание продукта для Стиральные машины, модель G-0	\N	114	2026-02-26 15:23:48.06551+03	13931.00	301
+187	Однокамерные, модель Q-0	Описание продукта для Однокамерные, модель Q-0	\N	123	2026-02-26 15:23:48.06551+03	18161.00	303
+188	Однокамерные, модель N-1	Описание продукта для Однокамерные, модель N-1	\N	121	2026-02-26 15:23:48.06551+03	9567.00	303
+189	Однокамерные, модель P-2	Описание продукта для Однокамерные, модель P-2	\N	125	2026-02-26 15:23:48.06551+03	19233.00	303
+190	Однокамерные, модель R-3	Описание продукта для Однокамерные, модель R-3	\N	124	2026-02-26 15:23:48.06551+03	16990.00	303
+191	Однокамерные, модель N-4	Описание продукта для Однокамерные, модель N-4	\N	123	2026-02-26 15:23:48.06551+03	9214.00	303
+192	Двухкамерные, модель S-0	Описание продукта для Двухкамерные, модель S-0	\N	126	2026-02-26 15:23:48.06551+03	10464.00	304
+193	Двухкамерные, модель M-1	Описание продукта для Двухкамерные, модель M-1	\N	126	2026-02-26 15:23:48.06551+03	2657.00	304
+194	Двухкамерные, модель M-2	Описание продукта для Двухкамерные, модель M-2	\N	116	2026-02-26 15:23:48.06551+03	11879.00	304
+195	Двухкамерные, модель M-3	Описание продукта для Двухкамерные, модель M-3	\N	126	2026-02-26 15:23:48.06551+03	4406.00	304
+196	Телевизоры, модель T-0	Описание продукта для Телевизоры, модель T-0	\N	123	2026-02-26 15:23:48.06551+03	19802.00	305
+197	Телевизоры, модель T-1	Описание продукта для Телевизоры, модель T-1	\N	120	2026-02-26 15:23:48.06551+03	18006.00	305
+198	Телевизоры, модель J-2	Описание продукта для Телевизоры, модель J-2	\N	119	2026-02-26 15:23:48.06551+03	14187.00	305
+199	Пылесосы, модель J-0	Описание продукта для Пылесосы, модель J-0	\N	118	2026-02-26 15:23:48.06551+03	11589.00	306
+200	13'', модель D-0	Описание продукта для 13'', модель D-0	\N	117	2026-02-26 15:23:48.06551+03	16065.00	309
+201	13'', модель Q-1	Описание продукта для 13'', модель Q-1	\N	125	2026-02-26 15:23:48.06551+03	17870.00	309
+202	13'', модель W-2	Описание продукта для 13'', модель W-2	\N	123	2026-02-26 15:23:48.06551+03	6338.00	309
+203	13'', модель P-3	Описание продукта для 13'', модель P-3	\N	123	2026-02-26 15:23:48.06551+03	6111.00	309
+204	13'', модель C-4	Описание продукта для 13'', модель C-4	\N	126	2026-02-26 15:23:48.06551+03	19783.00	309
+205	15'', модель I-0	Описание продукта для 15'', модель I-0	\N	123	2026-02-26 15:23:48.06551+03	2467.00	310
+206	15'', модель J-1	Описание продукта для 15'', модель J-1	\N	123	2026-02-26 15:23:48.06551+03	18031.00	310
+207	15'', модель P-2	Описание продукта для 15'', модель P-2	\N	125	2026-02-26 15:23:48.06551+03	14117.00	310
+208	15'', модель C-3	Описание продукта для 15'', модель C-3	\N	117	2026-02-26 15:23:48.06551+03	11282.00	310
+209	15'', модель T-4	Описание продукта для 15'', модель T-4	\N	116	2026-02-26 15:23:48.06551+03	14531.00	310
+210	17'', модель J-0	Описание продукта для 17'', модель J-0	\N	115	2026-02-26 15:23:48.06551+03	14139.00	311
+211	17'', модель S-1	Описание продукта для 17'', модель S-1	\N	114	2026-02-26 15:23:48.06551+03	11397.00	311
+212	17'', модель M-2	Описание продукта для 17'', модель M-2	\N	115	2026-02-26 15:23:48.06551+03	6980.00	311
+213	Моноблоки, модель U-0	Описание продукта для Моноблоки, модель U-0	\N	126	2026-02-26 15:23:48.06551+03	13643.00	312
+214	Системные блоки, модель B-0	Описание продукта для Системные блоки, модель B-0	\N	119	2026-02-26 15:23:48.06551+03	14127.00	313
+\.
+
+
+--
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: andrus
+--
+
+COPY public.users (id, email, hashed_password, is_active, is_superuser, created_at) FROM stdin;
+1	anarko7@gmail.com	$2b$12$6wtNdHyFifwzyLTdQDsFXeTcK.fWLlj9UJJOUv1.62myMNOZfSuBi	t	t	2026-02-25 17:02:59.445436+03
+\.
+
+
+--
+-- Name: categories_id_seq; Type: SEQUENCE SET; Schema: public; Owner: andrus
+--
+
+SELECT pg_catalog.setval('public.categories_id_seq', 313, true);
+
+
+--
+-- Name: clients_id_seq; Type: SEQUENCE SET; Schema: public; Owner: andrus
+--
+
+SELECT pg_catalog.setval('public.clients_id_seq', 10, true);
+
+
+--
+-- Name: manufacturers_id_seq; Type: SEQUENCE SET; Schema: public; Owner: andrus
+--
+
+SELECT pg_catalog.setval('public.manufacturers_id_seq', 126, true);
+
+
+--
+-- Name: order_items_id_seq; Type: SEQUENCE SET; Schema: public; Owner: andrus
+--
+
+SELECT pg_catalog.setval('public.order_items_id_seq', 137, true);
+
+
+--
+-- Name: orders_id_seq; Type: SEQUENCE SET; Schema: public; Owner: andrus
+--
+
+SELECT pg_catalog.setval('public.orders_id_seq', 46, true);
+
+
+--
+-- Name: products_id_seq; Type: SEQUENCE SET; Schema: public; Owner: andrus
+--
+
+SELECT pg_catalog.setval('public.products_id_seq', 214, true);
+
+
+--
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: andrus
+--
+
+SELECT pg_catalog.setval('public.users_id_seq', 1, true);
+
+
+--
+-- Name: alembic_version alembic_version_pkc; Type: CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.alembic_version
+    ADD CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num);
+
+
+--
+-- Name: categories categories_pkey; Type: CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.categories
+    ADD CONSTRAINT categories_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: clients clients_pkey; Type: CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.clients
+    ADD CONSTRAINT clients_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: manufacturers manufacturers_pkey; Type: CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.manufacturers
+    ADD CONSTRAINT manufacturers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: order_items order_items_pkey; Type: CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.order_items
+    ADD CONSTRAINT order_items_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: orders orders_pkey; Type: CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.orders
+    ADD CONSTRAINT orders_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: products products_pkey; Type: CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.products
+    ADD CONSTRAINT products_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ix_categories_name; Type: INDEX; Schema: public; Owner: andrus
+--
+
+CREATE INDEX ix_categories_name ON public.categories USING btree (name);
+
+
+--
+-- Name: ix_clients_address; Type: INDEX; Schema: public; Owner: andrus
+--
+
+CREATE INDEX ix_clients_address ON public.clients USING btree (address);
+
+
+--
+-- Name: ix_clients_first_name; Type: INDEX; Schema: public; Owner: andrus
+--
+
+CREATE INDEX ix_clients_first_name ON public.clients USING btree (first_name);
+
+
+--
+-- Name: ix_clients_last_name; Type: INDEX; Schema: public; Owner: andrus
+--
+
+CREATE INDEX ix_clients_last_name ON public.clients USING btree (last_name);
+
+
+--
+-- Name: ix_clients_phone; Type: INDEX; Schema: public; Owner: andrus
+--
+
+CREATE INDEX ix_clients_phone ON public.clients USING btree (phone);
+
+
+--
+-- Name: ix_manufacturers_name; Type: INDEX; Schema: public; Owner: andrus
+--
+
+CREATE INDEX ix_manufacturers_name ON public.manufacturers USING btree (name);
+
+
+--
+-- Name: ix_orders_delivery; Type: INDEX; Schema: public; Owner: andrus
+--
+
+CREATE INDEX ix_orders_delivery ON public.orders USING btree (delivery);
+
+
+--
+-- Name: ix_orders_order_no; Type: INDEX; Schema: public; Owner: andrus
+--
+
+CREATE INDEX ix_orders_order_no ON public.orders USING btree (order_no);
+
+
+--
+-- Name: ix_orders_status; Type: INDEX; Schema: public; Owner: andrus
+--
+
+CREATE INDEX ix_orders_status ON public.orders USING btree (status);
+
+
+--
+-- Name: ix_products_name; Type: INDEX; Schema: public; Owner: andrus
+--
+
+CREATE INDEX ix_products_name ON public.products USING btree (name);
+
+
+--
+-- Name: ix_users_email; Type: INDEX; Schema: public; Owner: andrus
+--
+
+CREATE UNIQUE INDEX ix_users_email ON public.users USING btree (email);
+
+
+--
+-- Name: categories categories_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.categories
+    ADD CONSTRAINT categories_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id);
+
+
+--
+-- Name: categories categories_parent_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.categories
+    ADD CONSTRAINT categories_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES public.categories(id);
+
+
+--
+-- Name: manufacturers manufacturers_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.manufacturers
+    ADD CONSTRAINT manufacturers_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id);
+
+
+--
+-- Name: order_items order_items_order_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.order_items
+    ADD CONSTRAINT order_items_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id);
+
+
+--
+-- Name: order_items order_items_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.order_items
+    ADD CONSTRAINT order_items_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id);
+
+
+--
+-- Name: orders orders_client_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.orders
+    ADD CONSTRAINT orders_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.clients(id);
+
+
+--
+-- Name: products products_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.products
+    ADD CONSTRAINT products_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.categories(id);
+
+
+--
+-- Name: products products_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.products
+    ADD CONSTRAINT products_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id);
+
+
+--
+-- Name: products products_manufacturer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: andrus
+--
+
+ALTER TABLE ONLY public.products
+    ADD CONSTRAINT products_manufacturer_id_fkey FOREIGN KEY (manufacturer_id) REFERENCES public.manufacturers(id);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
