@@ -65,6 +65,28 @@ JOIN order_items AS i ON i.order_id = o.id
 GROUP BY c.id
 ```
 
+
+## Макет фронтенда (Vue 3)
+
+В репозитории добавлен фронтенд-макет в папке `frontend`.
+
+### Запуск
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Фронтенд запускается на `http://localhost:5173` и проксирует API-запросы (`/api/*`) на backend по адресу `http://localhost:8080`.
+
+### Что реализовано
+
+- Вход по `OAuth2 Password Flow` через `POST /api/v1/auth/token/`
+- Разделы: товары, клиенты, заказы
+- Для заказов есть форма добавления товара через `POST /api/v1/orders/{order_id}/items/add`
+- JWT-токен сохраняется в `localStorage` и автоматически подставляется в `Authorization: Bearer ...`
+
 ### Найти количество дочерних элементов первого уровня вложенности для категорий номенклатуры.
 
 ```sql
