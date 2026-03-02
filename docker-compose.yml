@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: testing_products_db
+    environment:
+      POSTGRES_DB: products_db
+      POSTGRES_USER: manager
+      POSTGRES_PASSWORD: manager
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U manager -d products_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: testing_products_redis
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: testing_products_api
+    environment:
+      MODE: docker
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: testing_products_frontend
+    environment:
+      VITE_API_TARGET: http://api:8080
+    depends_on:
+      - api
+    ports:
+      - "5173:5173"
+
+volumes:
+  pg_data:

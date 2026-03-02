@@ -2,10 +2,13 @@ ALLOW_ORIGINS:
   - "*"
 
 DB:
+  PG_USER: manager
+  PG_PASSWORD: manager
+  DATABASE: products_db
   PG_HOST: db
 
 REDIS:
-  REDIST_HOST: redis
+  REDIS_HOST: redis
   
 RABBIT:
   RABBIT_HOST: rabbit
