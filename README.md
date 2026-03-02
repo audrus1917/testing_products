@@ -100,6 +100,29 @@ docker compose up --build
 
 Скрипт загрузки данных идемпотентен: если данные уже есть, повторно они не создаются.
 
+### Локальный dev-режим (override)
+
+Файл `docker-compose.override.yml` применяется автоматически и добавляет:
+
+- доступ к PostgreSQL с хоста: `localhost:55432`
+- доступ к Redis с хоста: `localhost:56379`
+- монтирование исходников в контейнеры `api` и `frontend`
+
+Если нужен только базовый compose без override:
+
+```bash
+docker compose -f docker-compose.yml up --build
+```
+
+### Полный сброс и «чистый первый запуск»
+
+```bash
+docker compose down -v --remove-orphans
+docker compose up --build -d
+```
+
+После удаления volume у PostgreSQL миграции и `data_loader.py` выполнятся заново как при первом запуске.
+
 ### Что реализовано
 
 - Вход по `OAuth2 Password Flow` через `POST /api/v1/auth/token/`

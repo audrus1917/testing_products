@@ -1,0 +1,20 @@
+services:
+  db:
+    ports:
+      - "55432:5432"
+
+  redis:
+    ports:
+      - "56379:6379"
+
+  api:
+    volumes:
+      - ./src:/app/src
+      - ./commands:/app/commands
+      - ./migrations:/app/migrations
+      - ./etc:/app/etc
+
+  frontend:
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
