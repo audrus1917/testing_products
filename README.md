@@ -80,6 +80,26 @@ npm run dev
 
 Фронтенд запускается на `http://localhost:5173` и проксирует API-запросы (`/api/*`) на backend по адресу `http://localhost:8080`.
 
+## Запуск через Docker Compose
+
+```bash
+docker compose up --build
+```
+
+Что поднимается:
+
+- `api` (FastAPI) — `http://localhost:8080`
+- `frontend` (Vite + Vue) — `http://localhost:5173`
+- `db` (PostgreSQL) — внутренний сервис `db:5432` в сети compose
+- `redis` — внутренний сервис `redis:6379` для кэша API
+
+При старте контейнера `api` автоматически выполняются:
+
+1. `alembic upgrade head`
+2. `python commands/data_loader.py`
+
+Скрипт загрузки данных идемпотентен: если данные уже есть, повторно они не создаются.
+
 ### Что реализовано
 
 - Вход по `OAuth2 Password Flow` через `POST /api/v1/auth/token/`
